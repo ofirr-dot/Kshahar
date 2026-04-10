@@ -476,8 +476,16 @@ textarea{min-height:70px;resize:vertical}
       <div class="form-group"><div class="form-label">מקור הזמנה</div>
         <select id="r-source"><option value="direct">ישיר</option><option value="phone">טלפון</option><option value="booking.com">Booking.com</option><option value="airbnb">Airbnb</option><option value="walk_in">ווק-אין</option></select>
       </div>
-      <div class="form-group"><div class="form-label">אמצעי תשלום</div>
-        <select id="r-payment"><option value="cash">מזומן</option><option value="credit">כרטיס אשראי</option><option value="bank_transfer">העברה בנקאית</option><option value="online">אונליין</option></select>
+      <div class="form-group"><div class="form-label">העדפות תזונה</div>
+        <select id="r-diet">
+          <option value="">ללא העדפה מיוחדת</option>
+          <option value="vegetarian">צמחוני 🥗</option>
+          <option value="vegan">טבעוני 🌱</option>
+          <option value="gluten_free">ללא גלוטן</option>
+          <option value="halal">חלאל</option>
+          <option value="kosher">כשר</option>
+          <option value="other">אחר</option>
+        </select>
       </div>
       <div class="form-group full"><div class="form-label">בקשות מיוחדות</div><textarea id="r-notes" placeholder="בקשות מיוחדות, הערות..."></textarea></div>
     </div>
@@ -613,6 +621,45 @@ textarea{min-height:70px;resize:vertical}
     <div class="modal-footer">
       <button class="btn btn-primary" onclick="saveSpace()" id="btn-save-space">שמור</button>
       <button class="btn" onclick="closeModal('modal-space')">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: פרטי חדר -->
+<div class="modal-overlay" id="modal-room-detail">
+  <div class="modal" style="width:580px">
+    <div class="modal-header">
+      <div class="modal-title" id="rd-title">חדר</div>
+      <button class="modal-close" onclick="closeModal('modal-room-detail')">×</button>
+    </div>
+    <!-- סטטוס ופרטים -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:#FAFAF8;border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px">סטטוס</div>
+        <div id="rd-status"></div>
+      </div>
+      <div style="background:#FAFAF8;border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px">קיבולת</div>
+        <div style="font-size:18px;font-weight:600" id="rd-cap"></div>
+      </div>
+      <div style="background:#FAFAF8;border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px">מחיר/לילה</div>
+        <div style="font-size:18px;font-weight:600" id="rd-price"></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;font-size:13px">
+      <div style="color:var(--text2)">בניין: <strong id="rd-building"></strong></div>
+      <div style="color:var(--text2)">קומה: <strong id="rd-floor"></strong></div>
+      <div style="color:var(--text2)">סוג: <strong id="rd-type"></strong></div>
+    </div>
+    <!-- הזמנה אחרונה -->
+    <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">הזמנה נוכחית / אחרונה</div>
+    <div id="rd-current-res" style="margin-bottom:16px;font-size:13px"></div>
+    <!-- פעולות -->
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="rd-book-btn" onclick="bookFromRoom()">+ הזמנה חדשה לחדר זה</button>
+      <button class="btn" onclick="editRoomFromDetail()">✏️ עריכה</button>
+      <button class="btn" onclick="closeModal('modal-room-detail')">סגור</button>
     </div>
   </div>
 </div>
@@ -797,14 +844,74 @@ function renderDashboard() {
 function renderRoomGrid(list, id) {
   const el = document.getElementById(id);
   const labels = {available:'פנוי',occupied:'תפוס',needs_cleaning:'ניקיון',under_renovation:'שיפוץ',needs_maintenance:'תחזוקה'};
-  el.innerHTML = list.length ? list.map(r=>`<div class="room-cell ${r.status}" title="חדר ${r.room_number}"><div class="room-num">${r.room_number}</div><div class="room-st">${labels[r.status]||r.status}</div></div>`).join('') : '<div style="font-size:11px;color:var(--text2)">אין חדרים</div>';
+  el.innerHTML = list.length ? list.map(r=>`<div class="room-cell ${r.status}" title="לחץ לפרטי חדר ${r.room_number}" onclick="openRoomDetail(${r.id})"><div class="room-num">${r.room_number}</div><div class="room-st">${labels[r.status]||r.status}</div></div>`).join('') : '<div style="font-size:11px;color:var(--text2)">אין חדרים</div>';
+}
+
+// ===== ROOM DETAIL =====
+let currentRoomId = null;
+
+function openRoomDetail(id) {
+  const r = rooms.find(r=>r.id===id);
+  if(!r) return;
+  currentRoomId = id;
+  document.getElementById('rd-title').textContent = 'חדר ' + r.room_number;
+  document.getElementById('rd-status').innerHTML = pill(r.status);
+  document.getElementById('rd-cap').textContent = r.capacity + ' אורחים';
+  document.getElementById('rd-price').textContent = '₪' + fmt(r.price_per_night);
+  document.getElementById('rd-building').textContent = bname(r.building_id);
+  document.getElementById('rd-floor').textContent = r.floor || '—';
+  document.getElementById('rd-type').textContent = rtype(r.room_type);
+
+  // הזמנה נוכחית
+  const active = reservations.find(res=>res.room_id===id && (res.status==='checked_in'||res.status==='confirmed'));
+  const rdRes = document.getElementById('rd-current-res');
+  if(active){
+    const g = guests.find(g=>g.id===active.guest_id)||{};
+    const dietLabels = {vegetarian:'צמחוני 🥗',vegan:'טבעוני 🌱',gluten_free:'ללא גלוטן',halal:'חלאל',kosher:'כשר',other:'אחר'};
+    rdRes.innerHTML = `
+      <div style="background:#FAFAF8;border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+        <div style="font-weight:500;margin-bottom:6px">${g.last_name||'—'}, ${g.first_name||'—'}</div>
+        <div style="color:var(--text2);font-size:12px;display:flex;gap:16px;flex-wrap:wrap">
+          <span>צ׳ק-אין: ${active.check_in_date}</span>
+          <span>צ׳ק-אאוט: ${active.check_out_date}</span>
+          <span>${active.num_guests} אורחים</span>
+          ${active.dietary_preference ? '<span>תזונה: '+dietLabels[active.dietary_preference]+'</span>' : ''}
+        </div>
+        ${active.special_requests ? '<div style="margin-top:8px;font-size:12px;color:var(--text2)">בקשות: '+active.special_requests+'</div>' : ''}
+      </div>`;
+  } else {
+    rdRes.innerHTML = '<div style="color:var(--text2);font-size:12px">אין הזמנה פעילה</div>';
+  }
+
+  // הסתר כפתור הזמנה אם תפוס
+  document.getElementById('rd-book-btn').style.display = r.status==='available' ? '' : 'none';
+  document.getElementById('modal-room-detail').classList.add('open');
+}
+
+function bookFromRoom() {
+  closeModal('modal-room-detail');
+  prepReservationModal();
+  // בחר אוטומטית את החדר הנוכחי
+  setTimeout(()=>{
+    const sel = document.getElementById('r-room');
+    for(let opt of sel.options){
+      if(parseInt(opt.value)===currentRoomId){ opt.selected=true; break; }
+    }
+    updatePricePreview();
+    document.getElementById('modal-reservation').classList.add('open');
+  }, 50);
+}
+
+function editRoomFromDetail() {
+  closeModal('modal-room-detail');
+  editRoom(currentRoomId);
 }
 
 // ===== ROOMS =====
 function renderRooms(list) {
   document.getElementById('rooms-tbody').innerHTML = list.length ? list.map(r=>`
     <tr data-status="${r.status}" data-search="${r.room_number}">
-      <td>${r.room_number}</td><td>${bname(r.building_id)}</td><td>${r.floor||'—'}</td>
+      <td><button class="btn btn-sm" style="font-weight:600;color:var(--warm-dark);border-color:var(--warm);background:var(--warm-light)" onclick="openRoomDetail(${r.id})">${r.room_number}</button></td><td>${bname(r.building_id)}</td><td>${r.floor||'—'}</td>
       <td>${r.capacity}</td><td>${rtype(r.room_type)}</td><td>₪${fmt(r.price_per_night)}</td>
       <td>${pill(r.status)}</td>
       <td style="white-space:nowrap;display:flex;gap:4px;flex-wrap:wrap">
@@ -1095,7 +1202,7 @@ function prepReservationModal(){
   });
   document.getElementById('r-lang').value='he';
   document.getElementById('r-source').value='direct';
-  document.getElementById('r-payment').value='cash';
+  document.getElementById('r-diet').value='';
   document.getElementById('r-guests').value='1';
   document.getElementById('r-price-preview').style.display='none';
 
@@ -1163,7 +1270,7 @@ async function saveReservation(){
   const co=document.getElementById('r-checkout').value;
   const ng=parseInt(document.getElementById('r-guests').value)||1;
   const src=document.getElementById('r-source').value;
-  const pay=document.getElementById('r-payment').value;
+  const diet=document.getElementById('r-diet').value;
   const notes=document.getElementById('r-notes').value.trim();
 
   if(!first||!last){toast('נא להזין שם אורח','error');return;}
@@ -1183,7 +1290,7 @@ async function saveReservation(){
     const room=rooms.find(r=>r.id===roomId);
     const n=nights(ci,co);
     const total=(room?.price_per_night||0)*n;
-    await post('reservations',{guest_id:guest.id,room_id:roomId,check_in_date:ci,check_out_date:co,num_guests:ng,price_per_night:room?.price_per_night||0,total_price:total,status:'confirmed',payment_status:'pending',payment_method:pay,source:src,special_requests:notes||null});
+    await post('reservations',{guest_id:guest.id,room_id:roomId,check_in_date:ci,check_out_date:co,num_guests:ng,price_per_night:room?.price_per_night||0,total_price:total,status:'confirmed',payment_status:'pending',source:src,dietary_preference:diet||null,special_requests:notes||null});
     toast('ההזמנה נשמרה בהצלחה! ✓');
     closeModal('modal-reservation');
     await loadAll();
