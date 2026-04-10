@@ -835,6 +835,12 @@ function editRoom(id) {
 }
 
 async function deleteRoom(id, num) {
+  // בדוק אם יש הזמנות מקושרות לחדר
+  const linked = reservations.filter(r=>r.room_id===id);
+  if(linked.length>0){
+    toast(`לא ניתן למחוק את חדר ${num} — יש לו ${linked.length} הזמנות מקושרות. שנה את סטטוסו ל"תחזוקה" במקום.`,'error');
+    return;
+  }
   confirm('מחיקת חדר', `למחוק את חדר ${num}? פעולה זו לא ניתנת לביטול.`, async()=>{
     try{
       const r = await fetch(`${SB_URL}/rest/v1/rooms?id=eq.${id}`,{method:'DELETE',headers:H});
