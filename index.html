@@ -807,11 +807,42 @@ function renderRooms(list) {
       <td>${r.room_number}</td><td>${bname(r.building_id)}</td><td>${r.floor||'—'}</td>
       <td>${r.capacity}</td><td>${rtype(r.room_type)}</td><td>₪${fmt(r.price_per_night)}</td>
       <td>${pill(r.status)}</td>
-      <td style="white-space:nowrap">
+      <td style="white-space:nowrap;display:flex;gap:4px;flex-wrap:wrap">
         <button class="btn btn-sm" onclick="confirmChangeRoomStatus(${r.id},'needs_cleaning','${r.room_number}')">ניקיון</button>
         <button class="btn btn-sm" onclick="confirmChangeRoomStatus(${r.id},'available','${r.room_number}')">פנוי</button>
+        <button class="btn btn-sm" onclick="editRoom(${r.id})">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteRoom(${r.id},'${r.room_number}')">🗑</button>
       </td>
     </tr>`).join('') : '<tr class="loading-row"><td colspan="8">אין חדרים</td></tr>';
+}
+
+let editingRoomId = null;
+
+function editRoom(id) {
+  const r = rooms.find(r=>r.id===id);
+  if(!r) return;
+  editingRoomId = id;
+  document.getElementById('rm-num').value = r.room_number||'';
+  document.getElementById('rm-building').value = r.building_id||1;
+  document.getElementById('rm-floor').value = r.floor||1;
+  document.getElementById('rm-cap').value = r.capacity||2;
+  document.getElementById('rm-type').value = r.room_type||'room';
+  document.getElementById('rm-price').value = r.price_per_night||0;
+  document.getElementById('rm-notes').value = r.notes||'';
+  document.querySelector('#modal-room .modal-title').textContent = 'עריכת חדר '+r.room_number;
+  document.querySelector('#modal-room .btn-primary').textContent = 'שמור שינויים';
+  document.getElementById('modal-room').classList.add('open');
+}
+
+async function deleteRoom(id, num) {
+  confirm('מחיקת חדר', `למחוק את חדר ${num}? פעולה זו לא ניתנת לביטול.`, async()=>{
+    try{
+      const r = await fetch(`${SB_URL}/rest/v1/rooms?id=eq.${id}`,{method:'DELETE',headers:H});
+      if(!r.ok) throw new Error(await r.text());
+      toast('חדר נמחק בהצלחה');
+      await loadAll();
+    }catch(e){toast('שגיאה: '+e.message,'error');}
+  });
 }
 
 function filterRooms(f,btn){
@@ -1042,6 +1073,7 @@ function openModal(id) {
 }
 function closeModal(id){
   document.getElementById(id).classList.remove('open');
+  if(id==='modal-room') resetRoomModal();
 }
 // Close modal on overlay click
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
@@ -1162,12 +1194,36 @@ async function saveRoom(){
   const price=parseFloat(document.getElementById('rm-price').value)||0;
   const notes=document.getElementById('rm-notes').value.trim();
   if(!num){toast('נא להזין מספר חדר','error');return;}
+
+  const btn=document.querySelector('#modal-room .btn-primary');
+  btn.disabled=true; btn.textContent='שומר...';
   try{
-    await post('rooms',{room_number:num,building_id:bid,floor,capacity:cap,room_type:type,price_per_night:price,status:'available',notes:notes||null});
-    toast('החדר נוסף בהצלחה ✓');
+    const body={room_number:num,building_id:bid,floor,capacity:cap,room_type:type,price_per_night:price,notes:notes||null};
+    if(editingRoomId){
+      await patch('rooms',editingRoomId,body);
+      toast('החדר עודכן בהצלחה ✓');
+    } else {
+      await post('rooms',{...body,status:'available'});
+      toast('החדר נוסף בהצלחה ✓');
+    }
     closeModal('modal-room');
+    resetRoomModal();
     await loadAll();
   }catch(e){toast('שגיאה: '+e.message,'error');}
+  btn.disabled=false; btn.textContent=editingRoomId?'שמור שינויים':'הוסף חדר';
+}
+
+function resetRoomModal(){
+  editingRoomId=null;
+  document.querySelector('#modal-room .modal-title').textContent='הוספת חדר חדש';
+  document.querySelector('#modal-room .btn-primary').textContent='הוסף חדר';
+  document.getElementById('rm-num').value='';
+  document.getElementById('rm-building').value='1';
+  document.getElementById('rm-floor').value='1';
+  document.getElementById('rm-cap').value='2';
+  document.getElementById('rm-type').value='room';
+  document.getElementById('rm-price').value='150';
+  document.getElementById('rm-notes').value='';
 }
 
 async function saveGuest(){
