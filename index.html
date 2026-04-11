@@ -300,33 +300,96 @@ textarea{min-height:70px;resize:vertical}
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
+
+      <!-- מטריקות שורה 1 -->
       <div class="metrics">
-        <div class="metric-card">
-          <div class="metric-label">תפוסה כעת</div>
-          <div class="metric-value" id="m-occ-pct">—</div>
-          <div class="occ-bar"><div class="occ-fill" id="occ-bar-fill" style="width:0%"></div></div>
+        <div class="metric-card" style="cursor:pointer" onclick="dashScrollTo('dash-checkin-section')">
+          <div class="metric-label">📥 צ׳ק-אין היום</div>
+          <div class="metric-value" id="m-checkin" style="color:#27500A">—</div>
+          <div class="metric-sub">לחץ לרשימה ↓</div>
+        </div>
+        <div class="metric-card" style="cursor:pointer" onclick="dashScrollTo('dash-checkout-section')">
+          <div class="metric-label">📤 צ׳ק-אאוט היום</div>
+          <div class="metric-value" id="m-checkout" style="color:#633806">—</div>
+          <div class="metric-sub">לחץ לרשימה ↓</div>
+        </div>
+        <div class="metric-card" style="cursor:pointer" onclick="dashScrollTo('dash-staying-section')">
+          <div class="metric-label">🛏 שוהים כעת</div>
+          <div class="metric-value" id="m-staying">—</div>
+          <div class="occ-bar" style="margin-top:6px"><div class="occ-fill" id="occ-bar-fill" style="width:0%"></div></div>
           <div class="metric-sub" id="m-occ-sub">טוען...</div>
         </div>
+        <div class="metric-card" style="cursor:pointer" onclick="dashScrollTo('dash-future-section')">
+          <div class="metric-label">📅 הזמנות עתידיות</div>
+          <div class="metric-value" id="m-future">—</div>
+          <div class="metric-sub">30 הימים הקרובים</div>
+        </div>
+      </div>
+
+      <!-- מטריקות שורה 2 -->
+      <div class="metrics" style="margin-bottom:20px">
         <div class="metric-card">
-          <div class="metric-label">צ׳ק-אין היום</div>
-          <div class="metric-value" id="m-checkin">—</div>
-          <div class="metric-sub">אורחים מגיעים</div>
+          <div class="metric-label">חדרים פנויים</div>
+          <div class="metric-value" id="m-avail">—</div>
+          <div class="metric-sub">מוכנים לאירוח</div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">צ׳ק-אאוט היום</div>
-          <div class="metric-value" id="m-checkout">—</div>
-          <div class="metric-sub">אורחים עוזבים</div>
+          <div class="metric-label">תפוסה</div>
+          <div class="metric-value" id="m-occ-pct">—</div>
+          <div class="metric-sub">אחוז תפוסה</div>
         </div>
         <div class="metric-card">
           <div class="metric-label">בקשות פתוחות</div>
           <div class="metric-value" id="m-req">—</div>
           <div class="metric-sub" id="m-req-sub">ממתינות לטיפול</div>
         </div>
+        <div class="metric-card">
+          <div class="metric-label">תחזוקה פתוחה</div>
+          <div class="metric-value" id="m-maint-open">—</div>
+          <div class="metric-sub">קריאות פעילות</div>
+        </div>
       </div>
+
+      <!-- צ'ק-אין היום -->
+      <div class="card" id="dash-checkin-section">
+        <div class="card-header">
+          <div class="card-title" style="color:#27500A">📥 צ׳ק-אין היום</div>
+          <button class="btn btn-sm btn-primary" onclick="openModal('modal-reservation')">+ הזמנה חדשה</button>
+        </div>
+        <div id="dash-checkin-list"><div class="empty-state"><div class="empty-icon">✓</div>אין צ׳ק-אינים להיום</div></div>
+      </div>
+
+      <!-- צ'ק-אאוט היום -->
+      <div class="card" id="dash-checkout-section">
+        <div class="card-header">
+          <div class="card-title" style="color:#633806">📤 צ׳ק-אאוט היום</div>
+        </div>
+        <div id="dash-checkout-list"><div class="empty-state"><div class="empty-icon">✓</div>אין צ׳ק-אאוטים להיום</div></div>
+      </div>
+
+      <!-- שוהים כעת -->
+      <div class="card" id="dash-staying-section">
+        <div class="card-header">
+          <div class="card-title">🛏 שוהים כעת</div>
+          <span id="dash-staying-count" style="font-size:12px;color:var(--text2)"></span>
+        </div>
+        <div id="dash-staying-list"><div class="empty-state"><div class="empty-icon">🏠</div>אין אורחים שוהים כעת</div></div>
+      </div>
+
+      <!-- הזמנות עתידיות -->
+      <div class="card" id="dash-future-section">
+        <div class="card-header">
+          <div class="card-title">📅 הזמנות עתידיות</div>
+          <span id="dash-future-count" style="font-size:12px;color:var(--text2)"></span>
+        </div>
+        <div id="dash-future-list"><div class="empty-state"><div class="empty-icon">📅</div>אין הזמנות עתידיות</div></div>
+      </div>
+
+      <!-- מפת חדרים + בקשות דחופות -->
       <div class="grid-3">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">מפת חדרים — 2 בניינים</div>
+            <div class="card-title">מפת חדרים</div>
             <button class="btn btn-sm" onclick="showPage('rooms', document.querySelectorAll('.nav-item')[1])">כל החדרים</button>
           </div>
           <div class="building-label">בניין א׳</div>
@@ -342,15 +405,12 @@ textarea{min-height:70px;resize:vertical}
         </div>
         <div style="display:flex;flex-direction:column;gap:14px">
           <div class="card">
-            <div class="card-header"><div class="card-title">הגעות קרובות</div></div>
-            <div id="upcoming-list"><div class="empty-state">טוען...</div></div>
-          </div>
-          <div class="card">
             <div class="card-header"><div class="card-title">בקשות דחופות</div></div>
             <div id="urgent-requests"><div class="empty-state">טוען...</div></div>
           </div>
         </div>
       </div>
+
     </div>
 
     <!-- ROOMS -->
@@ -721,13 +781,7 @@ textarea{min-height:70px;resize:vertical}
 // ===== CONFIG =====
 const SB_URL = 'https://tkkmkntylhlcmvkcwfxx.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRra21rbnR5bGhsY212a2N3Znh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MDg5MzEsImV4cCI6MjA5MTI4NDkzMX0.GSt59u8FU3AowX8zvTqqyfbOvMAOoEVjj0vNBT_nPcc';
-const H = {
-  'apikey': SB_KEY,
-  'Authorization': 'Bearer ' + SB_KEY,
-  'Content-Type': 'application/json',
-  'Prefer': 'return=representation',
-  'X-Client-Info': 'hostel-app/1.0'
-};
+const H = {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
 
 let rooms=[], reservations=[], guests=[], requests=[], maint=[], spaces=[];
 let refreshTimer = null;
@@ -744,27 +798,13 @@ async function api(table, q='') {
   return r.json();
 }
 async function post(table, body) {
-  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {method:'POST', headers:H, body:JSON.stringify(body)});
-  if (!r.ok) {
-    let errMsg = '';
-    try { const e = await r.json(); errMsg = e.message || e.hint || e.details || JSON.stringify(e); }
-    catch { errMsg = await r.text(); }
-    if (r.status === 401 || r.status === 403) throw new Error(`אין הרשאה (${r.status}): בדוק RLS policies ב-Supabase. ${errMsg}`);
-    throw new Error(`שגיאת שרת (${r.status}): ${errMsg}`);
-  }
-  const data = await r.json();
-  if (!Array.isArray(data) || data.length === 0) throw new Error('השרת לא החזיר נתונים — ייתכן שהוגדרה מדיניות RLS שמונעת כתיבה. בדוק את ה-policies ב-Supabase.');
-  return data;
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:H,body:JSON.stringify(body)});
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
 }
 async function patch(table, id, body) {
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {method:'PATCH', headers:H, body:JSON.stringify(body)});
-  if (!r.ok) {
-    let errMsg = '';
-    try { const e = await r.json(); errMsg = e.message || e.hint || e.details || JSON.stringify(e); }
-    catch { errMsg = await r.text(); }
-    if (r.status === 401 || r.status === 403) throw new Error(`אין הרשאה (${r.status}): בדוק RLS policies ב-Supabase. ${errMsg}`);
-    throw new Error(`שגיאת שרת (${r.status}): ${errMsg}`);
-  }
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`,{method:'PATCH',headers:H,body:JSON.stringify(body)});
+  if (!r.ok) throw new Error(await r.text());
 }
 
 // ===== CONNECTION =====
@@ -857,49 +897,125 @@ function bname(bid) { return bid===1?'א׳':'ב׳'; }
 function rtype(t) { return {room:'חדר',suite:'סוויטה',dorm:'דורמיטורי'}[t]||t; }
 
 // ===== DASHBOARD =====
+function dashScrollTo(id){
+  const el=document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
 function renderDashboard() {
+  const t = today();
+  const in30 = new Date(); in30.setDate(in30.getDate()+30);
+  const in30str = in30.toISOString().slice(0,10);
+
+  // מטריקות
   const occ = rooms.filter(r=>r.status==='occupied').length;
+  const avail = rooms.filter(r=>r.status==='available').length;
   const total = rooms.length;
   const pct = total ? Math.round(occ/total*100) : 0;
   document.getElementById('m-occ-pct').textContent = pct+'%';
   document.getElementById('occ-bar-fill').style.width = pct+'%';
   document.getElementById('m-occ-sub').textContent = `${occ} מתוך ${total} חדרים`;
+  document.getElementById('m-avail').textContent = avail;
 
-  const t = today();
-  const ci = reservations.filter(r=>r.check_in_date===t&&r.status==='confirmed').length;
-  const co = reservations.filter(r=>r.check_out_date===t&&r.status==='checked_in').length;
+  const ciToday = reservations.filter(r=>r.check_in_date===t&&(r.status==='confirmed'||r.status==='checked_in'));
+  const coToday = reservations.filter(r=>r.check_out_date===t&&r.status==='checked_in');
+  const staying = reservations.filter(r=>r.status==='checked_in');
+  const future  = reservations.filter(r=>r.check_in_date>t&&r.check_in_date<=in30str&&r.status==='confirmed');
+
+  document.getElementById('m-checkin').textContent  = ciToday.length;
+  document.getElementById('m-checkout').textContent = coToday.length;
+  document.getElementById('m-staying').textContent  = staying.length;
+  document.getElementById('m-future').textContent   = future.length;
+
   const rqOpen = requests.filter(r=>r.status==='open').length;
-  document.getElementById('m-checkin').textContent = ci;
-  document.getElementById('m-checkout').textContent = co;
-  document.getElementById('m-req').textContent = rqOpen;
-  document.getElementById('m-req-sub').textContent = rqOpen>0 ? 'ממתינות לטיפול':'הכל טופל ✓';
-
-  const rqBadge = document.getElementById('requests-badge');
   const mtOpen = maint.filter(m=>m.status==='open'||m.status==='in_progress').length;
-  const mtBadge = document.getElementById('maint-badge');
+  document.getElementById('m-req').textContent = rqOpen;
+  document.getElementById('m-req-sub').textContent = rqOpen>0?'ממתינות לטיפול':'הכל טופל ✓';
+  document.getElementById('m-maint-open').textContent = mtOpen;
+
+  const rqBadge=document.getElementById('requests-badge');
+  const mtBadge=document.getElementById('maint-badge');
   if(rqOpen>0){rqBadge.textContent=rqOpen;rqBadge.style.display='inline'}else rqBadge.style.display='none';
   if(mtOpen>0){mtBadge.textContent=mtOpen;mtBadge.style.display='inline'}else mtBadge.style.display='none';
 
+  // מפת חדרים
   renderRoomGrid(rooms.filter(r=>r.building_id===1),'grid-a');
   renderRoomGrid(rooms.filter(r=>r.building_id===2),'grid-b');
 
-  const upcoming = reservations.filter(r=>r.check_in_date>=t&&r.status==='confirmed').slice(0,5);
-  const ul = document.getElementById('upcoming-list');
-  ul.innerHTML = upcoming.length ? upcoming.map(r=>{
-    const g=guests.find(g=>g.id===r.guest_id)||{};
-    const rm=rooms.find(rm=>rm.id===r.room_id)||{};
-    return `<div class="res-item"><div class="avatar">${ini(g.first_name,g.last_name)}</div><div class="res-info"><div class="res-name">${g.last_name||'—'}, ${g.first_name||'—'}</div><div class="res-detail">חדר ${rm.room_number||'?'} · ${r.check_in_date} · ${r.num_guests} אורחים</div></div><span class="pill pill-green">מגיע</span></div>`;
-  }).join('') : '<div class="empty-state"><div class="empty-icon">📅</div>אין הגעות קרובות</div>';
+  // --- עזר: שורת הזמנה עם כפתורי פעולה ---
+  function resRow(r, showCheckin, showCheckout) {
+    const g = guests.find(g=>g.id===r.guest_id)||{};
+    const rm = rooms.find(rm=>rm.id===r.room_id)||{};
+    const n = nights(r.check_in_date, r.check_out_date);
+    const gname = `${g.last_name||'—'}, ${g.first_name||'—'}`;
+    const phone = g.phone ? `<a href="tel:${g.phone}" style="color:var(--warm-dark);text-decoration:none">${g.phone}</a>` : '—';
+    let btns = '';
+    if(showCheckin && r.status==='confirmed')
+      btns += `<button class="btn btn-sm" style="background:#EAF3DE;color:#27500A;border-color:#C0DD97" onclick="quickCheckin(${r.id},'confirmed')">✓ צ׳ק-אין</button>`;
+    if(showCheckout && r.status==='checked_in')
+      btns += `<button class="btn btn-sm" style="background:#FAEEDA;color:#633806;border-color:#FAC775" onclick="quickCheckin(${r.id},'checked_in')">✓ צ׳ק-אאוט</button>`;
+    btns += ` <button class="btn btn-sm" onclick="showPage('reservations',document.querySelectorAll('.nav-item')[2])" title="הצג בהזמנות">↗</button>`;
+    return `<div class="res-item" style="flex-wrap:wrap;gap:8px">
+      <div class="avatar">${ini(g.first_name,g.last_name)}</div>
+      <div class="res-info" style="min-width:160px">
+        <div class="res-name">${gname}</div>
+        <div class="res-detail">חדר ${rm.room_number||'?'} (בניין ${bname(rm.building_id)}) · ${n} לילות · ${r.num_guests} אורחים</div>
+        <div class="res-detail" style="margin-top:2px">${phone}${g.email?' · '+g.email:''}</div>
+        ${r.special_requests?`<div class="res-detail" style="color:#7A4D0A;margin-top:2px">📝 ${r.special_requests}</div>`:''}
+      </div>
+      ${pill(r.status)}
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${btns}</div>
+    </div>`;
+  }
 
-  // FIX: show room number not room_id for urgent requests
-  const urgent = requests.filter(r=>r.status==='open'&&(r.priority==='urgent'||r.priority==='high')).slice(0,3);
+  // צ'ק-אין היום
+  const ciEl = document.getElementById('dash-checkin-list');
+  ciEl.innerHTML = ciToday.length
+    ? ciToday.map(r=>resRow(r,true,false)).join('<div style="height:1px;background:var(--border);margin:2px 0"></div>')
+    : '<div class="empty-state"><div class="empty-icon">✓</div>אין צ׳ק-אינים להיום</div>';
+
+  // צ'ק-אאוט היום
+  const coEl = document.getElementById('dash-checkout-list');
+  coEl.innerHTML = coToday.length
+    ? coToday.map(r=>resRow(r,false,true)).join('<div style="height:1px;background:var(--border);margin:2px 0"></div>')
+    : '<div class="empty-state"><div class="empty-icon">✓</div>אין צ׳ק-אאוטים להיום</div>';
+
+  // שוהים כעת
+  document.getElementById('dash-staying-count').textContent = staying.length ? staying.length+' אורחים' : '';
+  const stEl = document.getElementById('dash-staying-list');
+  stEl.innerHTML = staying.length
+    ? staying.map(r=>resRow(r,false,true)).join('<div style="height:1px;background:var(--border);margin:2px 0"></div>')
+    : '<div class="empty-state"><div class="empty-icon">🏠</div>אין אורחים שוהים כעת</div>';
+
+  // הזמנות עתידיות (30 יום)
+  document.getElementById('dash-future-count').textContent = future.length ? future.length+' הזמנות' : '';
+  const fuEl = document.getElementById('dash-future-list');
+  fuEl.innerHTML = future.length
+    ? future.sort((a,b)=>a.check_in_date.localeCompare(b.check_in_date)).map(r=>{
+        const g=guests.find(g=>g.id===r.guest_id)||{};
+        const rm=rooms.find(rm=>rm.id===r.room_id)||{};
+        const n=nights(r.check_in_date,r.check_out_date);
+        const daysUntil=Math.ceil((new Date(r.check_in_date)-new Date())/(864e5));
+        return `<div class="res-item" style="flex-wrap:wrap;gap:8px">
+          <div class="avatar">${ini(g.first_name,g.last_name)}</div>
+          <div class="res-info">
+            <div class="res-name">${g.last_name||'—'}, ${g.first_name||'—'}</div>
+            <div class="res-detail">חדר ${rm.room_number||'?'} · ${r.check_in_date} ← ${r.check_out_date} · ${n} לילות · ${r.num_guests} אורחים</div>
+            ${r.special_requests?`<div class="res-detail" style="color:#7A4D0A">📝 ${r.special_requests}</div>`:''}
+          </div>
+          <span class="pill pill-blue" style="white-space:nowrap">עוד ${daysUntil} ימים</span>
+        </div>`;
+      }).join('<div style="height:1px;background:var(--border);margin:2px 0"></div>')
+    : '<div class="empty-state"><div class="empty-icon">📅</div>אין הזמנות עתידיות ב-30 הימים הקרובים</div>';
+
+  // בקשות דחופות
+  const urgent = requests.filter(r=>r.status==='open'&&(r.priority==='urgent'||r.priority==='high')).slice(0,4);
   const uq = document.getElementById('urgent-requests');
   uq.innerHTML = urgent.length ? urgent.map(r=>{
     const rm = rooms.find(rm=>rm.id===r.room_id)||{};
     return `<div class="res-item"><div class="res-info"><div class="res-name">${r.title}</div><div class="res-detail">${r.room_id?'חדר '+rm.room_number:'—'} · ${r.request_type||''}</div></div>${pbadge(r.priority)}</div>`;
-  }).join('') : '<div class="empty-state">אין בקשות דחופות</div>';
+  }).join('') : '<div class="empty-state">אין בקשות דחופות ✓</div>';
 }
-
 function renderRoomGrid(list, id) {
   const el = document.getElementById(id);
   const labels = {available:'פנוי',occupied:'תפוס',needs_cleaning:'ניקיון',under_renovation:'שיפוץ',needs_maintenance:'תחזוקה'};
@@ -1036,8 +1152,8 @@ function confirmChangeRoomStatus(id, status, num) {
   confirm('שינוי סטטוס חדר', `לשנות חדר ${num} ל"${labels[status]||status}"?`, ()=>changeRoomStatus(id,status));
 }
 async function changeRoomStatus(id, status) {
-  try { await patch('rooms', id, {status}); toast('סטטוס חדר עודכן ✓'); await loadAll(); }
-  catch(e) { toast('שגיאה: ' + e.message, 'error'); }
+  try{await patch('rooms',id,{status});toast('סטטוס חדר עודכן');await loadAll();}
+  catch(e){toast('שגיאה','error');}
 }
 
 // ===== RESERVATIONS =====
@@ -1344,7 +1460,6 @@ async function saveReservation(){
     if(email) guest=guests.find(g=>g.email===email)||null;
     if(!guest){
       const res=await post('guests',{first_name:first,last_name:last,email:email||null,phone:phone||null,country:country||null,language_preference:lang});
-      if (!res || !res[0]) throw new Error('לא ניתן היה ליצור אורח — ייתכן שמדיניות RLS ב-Supabase מונעת הוספה. בדוק את ה-policies בטבלת guests.');
       guest=res[0];
     }
     const room=rooms.find(r=>r.id===roomId);
@@ -1423,21 +1538,7 @@ async function saveMaintenance(){
   }catch(e){toast('שגיאה: '+e.message,'error');}
 }
 
-// ===== RLS PERMISSION CHECK =====
-async function checkWritePermissions() {
-  // בדיקה שקטה: ניסיון OPTIONS/HEAD לוודא שיש הרשאות כתיבה
-  try {
-    const r = await fetch(`${SB_URL}/rest/v1/rooms?limit=1`, {
-      method: 'GET',
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
-    });
-    if (r.status === 401) {
-      toast('⚠️ אין הרשאות גישה ל-Supabase. בדוק את ה-API Key ואת מדיניות ה-RLS.', 'error');
-    }
-  } catch(e) { /* ignore */ }
-}
-
-
+// ===== LOAD ALL DATA =====
 async function loadAll(){
   setConn('loading');
   try{
@@ -1469,7 +1570,6 @@ refreshTimer = setInterval(loadAll, 60000);
 window.addEventListener('beforeunload', ()=>clearInterval(refreshTimer));
 
 loadAll();
-checkWritePermissions();
 
 // ===== PWA =====
 let deferredPrompt = null;
