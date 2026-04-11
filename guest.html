@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ברוכים הבאים — האכסניה</title>
+<meta name="theme-color" content="#E8A855">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F4F0;color:#1a1a1a;direction:rtl;min-height:100vh}
+:root{--warm:#E8A855;--warm-light:#FFF3E0;--warm-dark:#C47D20;--warm-text:#7A4D0A;--border:#e5e3dc;--surface:#fff;--radius:10px}
+
+.hero{background:linear-gradient(135deg,#E8A855 0%,#C47D20 100%);padding:32px 20px 28px;text-align:center;color:#fff}
+.hero-icon{font-size:48px;margin-bottom:8px}
+.hero-title{font-size:24px;font-weight:700;margin-bottom:4px}
+.hero-sub{font-size:14px;opacity:.85}
+
+.container{max-width:600px;margin:0 auto;padding:20px 16px 40px}
+
+.weather-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:16px}
+.weather-icon{font-size:40px;flex-shrink:0}
+.weather-info{flex:1}
+.weather-temp{font-size:32px;font-weight:700;color:#1a1a1a}
+.weather-desc{font-size:14px;color:#666;margin-top:2px}
+.weather-city{font-size:12px;color:#999;margin-top:2px}
+.weather-detail{font-size:12px;color:#666;margin-top:6px;display:flex;gap:12px;flex-wrap:wrap}
+
+.block-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+.block-header{display:flex;align-items:center;gap:10px;padding:14px 16px 10px}
+.block-icon{font-size:22px;flex-shrink:0}
+.block-title{font-size:15px;font-weight:600;color:#1a1a1a}
+.block-body{padding:4px 16px 14px;font-size:14px;line-height:1.7;color:#333;white-space:pre-line}
+
+.wifi-box{background:#E6F1FB;border-radius:8px;padding:14px 16px;margin:0 16px 14px;display:flex;align-items:center;gap:12px}
+.wifi-icon{font-size:24px}
+.wifi-label{font-size:11px;color:#0C447C;font-weight:600;margin-bottom:2px}
+.wifi-val{font-size:18px;font-weight:700;color:#0C447C;letter-spacing:1px;cursor:pointer;user-select:all}
+.wifi-hint{font-size:11px;color:#185FA5;margin-top:2px}
+.wifi-copied{font-size:11px;color:#27500A;display:none}
+
+.prayer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 16px 14px}
+.prayer-item{background:#FAEEDA;border-radius:8px;padding:10px;text-align:center}
+.prayer-name{font-size:11px;color:#633806;font-weight:600;margin-bottom:4px}
+.prayer-time{font-size:16px;font-weight:700;color:#633806}
+.prayer-item.next{background:#E8A855;box-shadow:0 2px 6px rgba(232,168,85,.4)}
+.prayer-item.next .prayer-name,.prayer-item.next .prayer-time{color:#fff}
+
+.emergency-box{background:#FCEBEB;border-radius:8px;padding:12px 16px;margin:0 16px 14px}
+.emergency-item{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #F7C1C1;font-size:13px}
+.emergency-item:last-child{border-bottom:none}
+.emergency-num{color:#A32D2D;font-weight:700;font-size:15px;margin-right:auto}
+
+.footer{text-align:center;padding:20px;font-size:12px;color:#999}
+.refresh-btn{display:block;margin:16px auto 0;padding:10px 24px;background:var(--warm);color:var(--warm-text);border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+
+/* skeleton */
+.skeleton{background:linear-gradient(90deg,#f0efeb 25%,#e8e7e3 50%,#f0efeb 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px;height:16px;margin:4px 0}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-icon">🏠</div>
+  <div class="hero-title">ברוכים הבאים!</div>
+  <div class="hero-sub" id="hero-sub">כל המידע שתצטרכו לשהייה נעימה</div>
+</div>
+
+<div class="container">
+
+  <!-- מזג אוויר -->
+  <div class="weather-card" id="weather-card">
+    <div class="weather-icon" id="w-icon">🌤</div>
+    <div class="weather-info">
+      <div class="weather-temp" id="w-temp"><div class="skeleton" style="width:80px;height:32px"></div></div>
+      <div class="weather-desc" id="w-desc"><div class="skeleton" style="width:120px"></div></div>
+      <div class="weather-city" id="w-city"><div class="skeleton" style="width:80px;height:11px"></div></div>
+      <div class="weather-detail" id="w-detail"></div>
+    </div>
+  </div>
+
+  <!-- בלוקי מידע -->
+  <div id="blocks-container">
+    <div class="block-card"><div class="block-header"><div class="block-icon">⏳</div><div class="block-title"><div class="skeleton" style="width:140px"></div></div></div><div class="block-body"><div class="skeleton"></div><div class="skeleton" style="width:80%"></div></div></div>
+  </div>
+
+  <button class="refresh-btn" onclick="loadAll()">↻ רענן מידע</button>
+
+  <div class="footer">מערכת ניהול האכסניה · מתעדכן אוטומטית</div>
+</div>
+
+<script>
+const SB_URL = 'https://tkkmkntylhlcmvkcwfxx.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRra21rbnR5bGhsY212a2N3Znh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MDg5MzEsImV4cCI6MjA5MTI4NDkzMX0.GSt59u8FU3AowX8zvTqqyfbOvMAOoEVjj0vNBT_nPcc';
+const H = {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+
+const IB_ICONS = {wifi:'📶',prayer:'🕍',weather:'🌤',events:'🎉',food:'🍽',rules:'📜',transport:'🚌',emergency:'🆘',info:'ℹ️'};
+const IB_BG    = {wifi:'#E6F1FB',prayer:'#FAEEDA',weather:'#EAF3DE',events:'#EEEDFE',food:'#FFF3E0',rules:'#F1EFE8',transport:'#E6F1FB',emergency:'#FCEBEB',info:'#F5F4F0'};
+const IB_TC    = {wifi:'#0C447C',prayer:'#633806',weather:'#27500A',events:'#3C3489',food:'#7A4D0A',rules:'#5F5E5A',transport:'#0C447C',emergency:'#791F1F',info:'#5F5E5A'};
+
+// ── Weather ─────────────────────────────────────────────────────────
+async function loadWeather() {
+  // try to get location; fallback to Jerusalem
+  const coords = await new Promise(res => {
+    if(navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        p=>res({lat:p.coords.latitude,lon:p.coords.longitude}),
+        ()=>res({lat:31.7683,lon:35.2137}),
+        {timeout:4000}
+      );
+    } else res({lat:31.7683,lon:35.2137});
+  });
+  try {
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&wind_speed_unit=kmh&timezone=auto`);
+    const d = await r.json();
+    const cur = d.current;
+    const wc = cur.weather_code||0;
+    const icons={0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌧',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'🌨',73:'🌨',75:'❄️',80:'🌦',81:'🌧',82:'🌩',95:'⛈',96:'⛈',99:'⛈'};
+    const descs={0:'שמש מלאה',1:'בהיר בעיקר',2:'מעונן חלקית',3:'מעונן',45:'ערפל',48:'ערפל',51:'גשם קל',53:'גשם',55:'גשם',61:'גשם קל',63:'גשם',65:'גשם חזק',71:'שלג קל',73:'שלג',75:'שלג כבד',80:'גשם קל',81:'גשם',82:'סופת גשמים',95:'סופת ברקים',96:'סופת ברקים',99:'סופת ברקים'};
+    document.getElementById('w-icon').textContent = icons[wc]||'🌤';
+    document.getElementById('w-temp').textContent = Math.round(cur.temperature_2m)+'°C';
+    document.getElementById('w-desc').textContent = descs[wc]||'';
+    // reverse-geocode city name
+    try {
+      const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${coords.lat}&lon=${coords.lon}&format=json`);
+      const gd = await geo.json();
+      const city = gd.address?.city||gd.address?.town||gd.address?.village||'';
+      document.getElementById('w-city').textContent = city;
+    } catch{}
+    document.getElementById('w-detail').innerHTML =
+      `<span>💧 לחות ${cur.relative_humidity_2m}%</span><span>💨 רוח ${Math.round(cur.wind_speed_10m)} קמ"ש</span>`;
+  } catch(e) {
+    document.getElementById('w-temp').textContent = '—';
+    document.getElementById('w-desc').textContent = 'לא ניתן לטעון מזג אוויר';
+  }
+}
+
+// ── Info Blocks ──────────────────────────────────────────────────────
+async function loadBlocks() {
+  let blocks = [];
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/info_blocks?active=eq.true&order=display_order,created_at`,{headers:H});
+    if(r.ok) blocks = await r.json();
+    else throw new Error();
+  } catch {
+    try { blocks = JSON.parse(localStorage.getItem('infoblocks')||'[]').filter(b=>b.active!==false&&b.active!=='false'); } catch{ blocks=[]; }
+  }
+  renderBlocks(blocks);
+}
+
+function renderBlocks(blocks) {
+  const el = document.getElementById('blocks-container');
+  if(!blocks.length){ el.innerHTML='<div style="text-align:center;padding:32px;color:#999;font-size:14px">אין מידע להצגה כרגע</div>'; return; }
+  el.innerHTML = blocks.sort((a,b)=>(a.display_order||0)-(b.display_order||0)).map(b=>{
+    const type = b.block_type||b.type||'info';
+    const icon = IB_ICONS[type]||'ℹ️';
+    const bg = IB_BG[type]||'#F5F4F0';
+    const tc = IB_TC[type]||'#333';
+    if(type==='wifi') return renderWifi(b, bg, tc);
+    if(type==='prayer') return renderPrayer(b, bg, tc);
+    if(type==='emergency') return renderEmergency(b);
+    return `<div class="block-card">
+      <div class="block-header"><div class="block-icon">${icon}</div><div class="block-title">${b.title}</div></div>
+      <div class="block-body" style="background:${bg};margin:0 16px 14px;border-radius:8px;padding:12px 14px;color:${tc}">${b.content}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderWifi(b, bg, tc) {
+  const lines = b.content.split('\n');
+  const net = lines[0]||'';
+  const pass = lines[1]||lines[0]||'';
+  return `<div class="block-card">
+    <div class="block-header"><div class="block-icon">📶</div><div class="block-title">${b.title}</div></div>
+    <div class="wifi-box">
+      <div class="wifi-icon">📶</div>
+      <div style="flex:1">
+        <div class="wifi-label">שם הרשת</div>
+        <div style="font-size:15px;font-weight:600;color:#0C447C">${net}</div>
+        <div class="wifi-label" style="margin-top:8px">סיסמה</div>
+        <div class="wifi-val" id="wifi-pass-${b.id||b._lid||0}" onclick="copyWifi('${pass}','${b.id||b._lid||0}')">${pass}</div>
+        <div class="wifi-hint">לחץ על הסיסמה להעתקה</div>
+        <div class="wifi-copied" id="wifi-copied-${b.id||b._lid||0}">✓ הועתק!</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function copyWifi(pass, id) {
+  navigator.clipboard.writeText(pass).then(()=>{
+    const el = document.getElementById('wifi-copied-'+id);
+    if(el){el.style.display='block';setTimeout(()=>el.style.display='none',2000);}
+  });
+}
+
+function renderPrayer(b, bg, tc) {
+  // expect content lines: שחרית 06:00 \n מנחה 13:30 \n ערבית 19:45 etc.
+  const lines = b.content.split('\n').filter(l=>l.trim());
+  const now = new Date();
+  const nowMin = now.getHours()*60+now.getMinutes();
+  let nextIdx = -1;
+  const parsed = lines.map((l,i)=>{
+    const parts = l.trim().split(/\s+/);
+    const name = parts.slice(0,-1).join(' ');
+    const timeStr = parts[parts.length-1]||'';
+    const [h,m] = timeStr.split(':').map(Number);
+    const totalMin = h*60+(m||0);
+    if(nextIdx===-1 && totalMin>nowMin) nextIdx=i;
+    return {name, time:timeStr, min:totalMin};
+  });
+  const items = parsed.map((p,i)=>
+    `<div class="prayer-item${i===nextIdx?' next':''}">
+      <div class="prayer-name">${p.name}</div>
+      <div class="prayer-time">${p.time}</div>
+      ${i===nextIdx?'<div style="font-size:9px;color:rgba(255,255,255,.8);margin-top:2px">הבא</div>':''}
+    </div>`).join('');
+  return `<div class="block-card">
+    <div class="block-header"><div class="block-icon">🕍</div><div class="block-title">${b.title}</div></div>
+    <div class="prayer-grid">${items}</div>
+  </div>`;
+}
+
+function renderEmergency(b) {
+  const lines = b.content.split('\n').filter(l=>l.trim());
+  const items = lines.map(l=>{
+    const parts = l.split(':');
+    const num = parts.pop().trim();
+    const label = parts.join(':').trim();
+    return `<div class="emergency-item">
+      <span style="font-size:14px;color:#791F1F">${label}</span>
+      <a href="tel:${num.replace(/[^0-9+]/g,'')}" class="emergency-num">${num}</a>
+    </div>`;
+  }).join('');
+  return `<div class="block-card">
+    <div class="block-header"><div class="block-icon">🆘</div><div class="block-title">${b.title}</div></div>
+    <div class="emergency-box">${items}</div>
+  </div>`;
+}
+
+async function loadAll() {
+  await Promise.all([loadWeather(), loadBlocks()]);
+}
+loadAll();
+setInterval(loadAll, 5*60*1000); // refresh every 5 min
+</script>
+</body>
+</html>

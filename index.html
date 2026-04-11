@@ -98,6 +98,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .room-cell.occupied{background:#FAEEDA;color:#633806;border-color:#FAC775}
 .room-cell.needs_maintenance,.room-cell.under_renovation{background:#FCEBEB;color:#791F1F;border-color:#F7C1C1}
 .room-cell.needs_cleaning{background:#E6F1FB;color:#0C447C;border-color:#B5D4F4}
+.room-cell.permanent{background:#EEEDFE;color:#3C3489;border-color:#AFA9EC}
+.pill-permanent{background:#EEEDFE;color:#3C3489}
 .room-num{font-size:13px;font-weight:600}
 .room-st{font-size:9px;margin-top:1px;opacity:.8}
 .building-label{font-size:11px;color:var(--text2);margin:10px 0 5px;font-weight:600}
@@ -276,6 +278,7 @@ textarea{min-height:70px;resize:vertical}
     <div class="nav-section">תפעול</div>
     <button class="nav-item" onclick="showPage('maintenance',this)"><span class="nav-icon">🔧</span>תחזוקה <span class="nav-badge" id="maint-badge" style="display:none">0</span></button>
     <button class="nav-item" onclick="showPage('spaces',this)"><span class="nav-icon">🏛</span>חללים משותפים</button>
+    <button class="nav-item" onclick="showPage('infoboard',this)"><span class="nav-icon">📋</span>לוח מידע לאורחים</button>
   </nav>
   <div class="sidebar-footer">
     <div class="conn-row">
@@ -338,6 +341,7 @@ textarea{min-height:70px;resize:vertical}
             <div class="legend-item"><div class="legend-dot" style="background:#FAC775"></div>תפוס</div>
             <div class="legend-item"><div class="legend-dot" style="background:#B5D4F4"></div>ניקיון</div>
             <div class="legend-item"><div class="legend-dot" style="background:#F7C1C1"></div>תחזוקה</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#AFA9EC"></div>קבוע</div>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:14px">
@@ -362,6 +366,7 @@ textarea{min-height:70px;resize:vertical}
           <button class="tab" onclick="filterRooms('occupied',this)">תפוסים</button>
           <button class="tab" onclick="filterRooms('needs_cleaning',this)">ניקיון</button>
           <button class="tab" onclick="filterRooms('needs_maintenance',this)">תחזוקה</button>
+          <button class="tab" onclick="filterRooms('permanent',this)">קבועים</button>
         </div>
         <button class="btn btn-primary btn-sm" onclick="openModal('modal-room')">+ חדר חדש</button>
       </div>
@@ -467,6 +472,42 @@ textarea{min-height:70px;resize:vertical}
             <tbody id="spaces-tbody"><tr class="loading-row"><td colspan="7">טוען...</td></tr></tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+
+    <!-- INFO BOARD PAGE -->
+    <div class="page" id="page-infoboard">
+      <div class="section-header">
+        <div style="font-size:13px;color:var(--text2)">ניהול לוח המידע לאורחים</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-sm" onclick="copyGuestLink()">🔗 העתק קישור</button>
+          <button class="btn btn-sm btn-primary" onclick="openModal('modal-infoblock')">+ הוסף מידע</button>
+        </div>
+      </div>
+
+      <!-- QR + לינק -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">קישור לאורחים</div>
+          <button class="btn btn-sm" onclick="copyGuestLink()">📋 העתק</button>
+        </div>
+        <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+          <div>
+            <div id="qr-code" style="padding:8px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);display:inline-block"></div>
+            <div style="font-size:11px;color:var(--text2);margin-top:6px;text-align:center">סרוק לגישה לדף האורחים</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:12px;color:var(--text2);margin-bottom:6px">קישור לדף האורחים:</div>
+            <div id="guest-link-display" style="font-size:12px;background:#FAFAF8;border:1px solid var(--border);border-radius:var(--radius);padding:10px;word-break:break-all;color:var(--warm-dark);cursor:pointer" onclick="copyGuestLink()">טוען...</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:6px">לחץ על הקישור להעתקה · הדף מתעדכן אוטומטית</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- כרטיסי מידע -->
+      <div id="infoblock-list">
+        <div class="empty-state"><div class="empty-icon">📋</div>אין בלוקי מידע עדיין. לחץ "+ הוסף מידע" כדי להתחיל.</div>
       </div>
     </div>
 
@@ -690,6 +731,56 @@ textarea{min-height:70px;resize:vertical}
   </div>
 </div>
 
+<!-- MODAL: לוח מידע - הוסף בלוק -->
+<div class="modal-overlay" id="modal-infoblock">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="infoblock-modal-title">הוסף מידע ללוח</div>
+      <button class="modal-close" onclick="closeModal('modal-infoblock')">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">סוג מידע <span class="req">*</span></div>
+        <select id="ib-type" onchange="updateInfoblockIcon()">
+          <option value="wifi">📶 סיסמת WiFi</option>
+          <option value="prayer">🕍 זמני תפילה</option>
+          <option value="weather">🌤 מזג אוויר</option>
+          <option value="events">🎉 אירועים ומפגשים</option>
+          <option value="food">🍽 מקומות אוכל</option>
+          <option value="rules">📜 כללי הבית</option>
+          <option value="transport">🚌 תחבורה</option>
+          <option value="emergency">🆘 חירום</option>
+          <option value="info">ℹ️ מידע כללי</option>
+        </select>
+      </div>
+      <div class="form-group"><div class="form-label">כותרת <span class="req">*</span></div><input type="text" id="ib-title" placeholder="לדוגמה: WiFi הבניין"></div>
+      <div class="form-group full"><div class="form-label">תוכן <span class="req">*</span></div><textarea id="ib-content" style="min-height:100px" placeholder="הכנס את המידע כאן...&#10;ניתן להשתמש בשורות חדשות"></textarea></div>
+      <div class="form-group"><div class="form-label">סדר תצוגה</div><input type="number" id="ib-order" value="0" min="0" placeholder="0 = ראשון"></div>
+      <div class="form-group"><div class="form-label">פעיל</div>
+        <select id="ib-active"><option value="true">מוצג לאורחים</option><option value="false">מוסתר</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveInfoblock()" id="btn-save-ib">שמור</button>
+      <button class="btn" onclick="closeModal('modal-infoblock')">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: דף אורח (preview) -->
+<div class="modal-overlay" id="modal-guest-preview">
+  <div class="modal" style="width:480px;max-height:85vh;overflow-y:auto">
+    <div class="modal-header">
+      <div class="modal-title">תצוגה מקדימה — דף אורחים</div>
+      <button class="modal-close" onclick="closeModal('modal-guest-preview')">×</button>
+    </div>
+    <div id="guest-preview-content"></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="copyGuestLink()">🔗 העתק קישור</button>
+      <button class="btn" onclick="closeModal('modal-guest-preview')">סגור</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM DIALOG -->
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
@@ -800,7 +891,8 @@ function showPage(name, btn) {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   if(btn) btn.classList.add('active');
-  const titles={dashboard:'לוח בקרה',rooms:'ניהול חדרים',reservations:'הזמנות',guests:'אורחים',requests:'בקשות אורחים',maintenance:'תחזוקה',spaces:'חללים משותפים'};
+  const titles={dashboard:'לוח בקרה',rooms:'ניהול חדרים',reservations:'הזמנות',guests:'אורחים',requests:'בקשות אורחים',maintenance:'תחזוקה',spaces:'חללים משותפים',infoboard:'לוח מידע לאורחים'};
+  if(name==='infoboard') loadInfoblocks();
   document.getElementById('page-title').textContent=titles[name]||name;
   closeMobileMenu();
 }
@@ -809,6 +901,7 @@ function showPage(name, btn) {
 function pill(s) {
   const m={
     available:'<span class="pill pill-green">פנוי</span>',
+    permanent:'<span class="pill pill-permanent">קבוע</span>',
     occupied:'<span class="pill pill-amber">תפוס</span>',
     needs_cleaning:'<span class="pill pill-blue">ניקיון</span>',
     under_renovation:'<span class="pill pill-red">שיפוץ</span>',
@@ -882,7 +975,7 @@ function renderDashboard() {
 
 function renderRoomGrid(list, id) {
   const el = document.getElementById(id);
-  const labels = {available:'פנוי',occupied:'תפוס',needs_cleaning:'ניקיון',under_renovation:'שיפוץ',needs_maintenance:'תחזוקה'};
+  const labels = {available:'פנוי',occupied:'תפוס',needs_cleaning:'ניקיון',under_renovation:'שיפוץ',needs_maintenance:'תחזוקה',permanent:'קבוע'};
   el.innerHTML = list.length ? list.map(r=>`<div class="room-cell ${r.status}" title="לחץ לפרטי חדר ${r.room_number}" onclick="openRoomDetail(${r.id})"><div class="room-num">${r.room_number}</div><div class="room-st">${labels[r.status]||r.status}</div></div>`).join('') : '<div style="font-size:11px;color:var(--text2)">אין חדרים</div>';
 }
 
@@ -956,6 +1049,7 @@ function renderRooms(list) {
       <td style="white-space:nowrap;display:flex;gap:4px;flex-wrap:wrap">
         <button class="btn btn-sm" onclick="confirmChangeRoomStatus(${r.id},'needs_cleaning','${r.room_number}')">ניקיון</button>
         <button class="btn btn-sm" onclick="confirmChangeRoomStatus(${r.id},'available','${r.room_number}')">פנוי</button>
+        <button class="btn btn-sm" style="background:#EEEDFE;color:#3C3489;border-color:#AFA9EC" onclick="confirmChangeRoomStatus(${r.id},'permanent','${r.room_number}')">קבוע</button>
         <button class="btn btn-sm" onclick="editRoom(${r.id})">✏️</button>
         <button class="btn btn-sm btn-danger" onclick="deleteRoom(${r.id},'${r.room_number}')">🗑</button>
       </td>
@@ -1016,16 +1110,8 @@ function confirmChangeRoomStatus(id, status, num) {
   confirm('שינוי סטטוס חדר', `לשנות חדר ${num} ל"${labels[status]||status}"?`, ()=>changeRoomStatus(id,status));
 }
 async function changeRoomStatus(id, status) {
-  try {
-    await patch('rooms', id, {status});
-    // עדכון לוקאלי מיידי
-    const room = rooms.find(r=>r.id===id);
-    if(room) room.status = status;
-    renderRooms(rooms);
-    renderDashboard();
-    toast('סטטוס חדר עודכן ✓');
-    loadAll(); // סנכרון ברקע
-  } catch(e) { toast('שגיאה: '+e.message, 'error'); }
+  try{await patch('rooms',id,{status});toast('סטטוס חדר עודכן');await loadAll();}
+  catch(e){toast('שגיאה','error');}
 }
 
 // ===== RESERVATIONS =====
@@ -1058,56 +1144,14 @@ function searchRes(q){
 }
 
 async function quickCheckin(id, status) {
-  const map = {confirmed:'checked_in', checked_in:'checked_out'};
+  const map = {confirmed:'checked_in',checked_in:'checked_out'};
   const next = map[status];
   if(!next){toast('לא ניתן לעדכן סטטוס זה','error');return;}
-
-  // סטטוס חדר מתאים לכל מעבר
-  const roomStatusMap = {
-    checked_in:  'occupied',       // צ'ק-אין  → חדר תפוס
-    checked_out: 'needs_cleaning'  // צ'ק-אאוט → חדר ניקיון
-  };
-  const newRoomStatus = roomStatusMap[next];
-
-  const labels = {checked_in:'צ׳ק-אין', checked_out:'צ׳ק-אאוט'};
-  const res = reservations.find(r=>r.id===id);
-  const room = res ? rooms.find(rm=>rm.id===res.room_id) : null;
-  const roomNum = room ? room.room_number : '';
-
-  confirm(
-    `${labels[next]}${roomNum?' — חדר '+roomNum:''}`,
-    next==='checked_in'
-      ? `לבצע צ׳ק-אין? החדר יסומן כ"תפוס" אוטומטית.`
-      : `לבצע צ׳ק-אאוט? החדר יעבור למצב "ניקיון" אוטומטית.`,
-    async () => {
-      try {
-        // 1. עדכן הזמנה
-        await patch('reservations', id, {status: next});
-
-        // 2. עדכן חדר (אם קיים)
-        if(room && newRoomStatus) {
-          await patch('rooms', room.id, {status: newRoomStatus});
-          // עדכון לוקאלי מיידי של ה-array לפני loadAll
-          room.status = newRoomStatus;
-        }
-
-        // 3. עדכון לוקאלי מיידי של ה-reservation
-        if(res) res.status = next;
-
-        // 4. רענן תצוגה מיד — לפני שה-API חוזר
-        renderDashboard();
-        renderRooms(rooms);
-        renderReservations(reservations);
-
-        toast(next==='checked_in' ? `צ׳ק-אין בוצע — חדר ${roomNum} תפוס ✓` : `צ׳ק-אאוט בוצע — חדר ${roomNum} ממתין לניקיון ✓`);
-
-        // 5. טען מחדש מהשרת ברקע לסנכרון מלא
-        loadAll();
-      } catch(e) {
-        toast('שגיאה: '+e.message, 'error');
-      }
-    }
-  );
+  const labels={checked_in:'צ׳ק-אין',checked_out:'צ׳ק-אאוט'};
+  confirm('עדכון סטטוס הזמנה', `לבצע ${labels[next]}?`, async()=>{
+    try{await patch('reservations',id,{status:next});toast('סטטוס עודכן!');await loadAll();}
+    catch(e){toast('שגיאה: '+e.message,'error');}
+  });
 }
 
 // ===== GUESTS =====
@@ -1271,6 +1315,7 @@ function openModal(id) {
   if(id==='modal-reservation') prepReservationModal();
   if(id==='modal-maintenance') prepMaintenanceModal();
   if(id==='modal-space') { openAddSpace(); return; }
+  if(id==='modal-infoblock') { openModal_infoblock(); return; }
   document.getElementById(id).classList.add('open');
 }
 function closeModal(id){
@@ -1450,6 +1495,164 @@ async function saveMaintenance(){
     closeModal('modal-maintenance');
     await loadAll();
   }catch(e){toast('שגיאה: '+e.message,'error');}
+}
+
+// ===== INFO BOARD =====
+let infoblocks = [];
+let editingInfoblockId = null;
+const IB_ICONS = {wifi:'📶',prayer:'🕍',weather:'🌤',events:'🎉',food:'🍽',rules:'📜',transport:'🚌',emergency:'🆘',info:'ℹ️'};
+const IB_COLORS = {wifi:'#E6F1FB',prayer:'#FAEEDA',weather:'#EAF3DE',events:'#EEEDFE',food:'#FFF3E0',rules:'#F1EFE8',transport:'#E6F1FB',emergency:'#FCEBEB',info:'#F1EFE8'};
+const IB_TEXT = {wifi:'#0C447C',prayer:'#633806',weather:'#27500A',events:'#3C3489',food:'#7A4D0A',rules:'#5F5E5A',transport:'#0C447C',emergency:'#791F1F',info:'#5F5E5A'};
+
+function getGuestPageURL() {
+  const base = window.location.href.split('?')[0].replace('index.html','');
+  return base + 'guest.html';
+}
+
+function copyGuestLink() {
+  const url = getGuestPageURL();
+  navigator.clipboard.writeText(url).then(()=>toast('הקישור הועתק ללוח! 🔗'));
+}
+
+async function loadInfoblocks() {
+  try {
+    infoblocks = await api('info_blocks','?order=display_order,created_at');
+  } catch(e) {
+    // table may not exist yet — use localStorage fallback
+    try { infoblocks = JSON.parse(localStorage.getItem('infoblocks')||'[]'); } catch{ infoblocks=[]; }
+  }
+  renderInfoblocks();
+  generateQR();
+}
+
+function generateQR() {
+  const url = getGuestPageURL();
+  document.getElementById('guest-link-display').textContent = url;
+  const qrEl = document.getElementById('qr-code');
+  if(!qrEl) return;
+  // Use QR API
+  const size = 140;
+  qrEl.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=1a1a1a&qzone=1" width="${size}" height="${size}" alt="QR Code" style="display:block">`;
+}
+
+function renderInfoblocks() {
+  const el = document.getElementById('infoblock-list');
+  if(!el) return;
+  const active = infoblocks.filter(b=>b.active!==false&&b.active!=='false');
+  const hidden = infoblocks.filter(b=>b.active===false||b.active==='false');
+  if(!infoblocks.length){
+    el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div>אין בלוקי מידע עדיין. לחץ "+ הוסף מידע" כדי להתחיל.</div>';
+    return;
+  }
+  const renderBlock = b => {
+    const bg = IB_COLORS[b.block_type||b.type]||'#F1EFE8';
+    const tc = IB_TEXT[b.block_type||b.type]||'#5F5E5A';
+    const icon = IB_ICONS[b.block_type||b.type]||'ℹ️';
+    const isHidden = b.active===false||b.active==='false';
+    return `<div class="card" style="border-right:4px solid ${tc.replace('#','').length===6?tc:'#ccc'};opacity:${isHidden?0.5:1}">
+      <div class="card-header" style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:20px">${icon}</span>
+          <div>
+            <div style="font-weight:600;font-size:14px;color:var(--text)">${b.title}</div>
+            <div style="font-size:11px;color:var(--text2)">${isHidden?'🔴 מוסתר':'🟢 מוצג לאורחים'}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm" onclick="editInfoblock(${b.id||"'"+b._lid+"'"})">✏️</button>
+          <button class="btn btn-sm" onclick="toggleInfoblock(${b.id||"'"+b._lid+"'"},${!isHidden})">${isHidden?'👁 הצג':'🙈 הסתר'}</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteInfoblock(${b.id||"'"+b._lid+"'"})">🗑</button>
+        </div>
+      </div>
+      <div style="background:${bg};border-radius:var(--radius);padding:12px;font-size:13px;color:${tc};white-space:pre-line;line-height:1.6">${b.content}</div>
+    </div>`;
+  };
+  el.innerHTML = infoblocks.sort((a,b)=>(a.display_order||0)-(b.display_order||0)).map(renderBlock).join('');
+}
+
+function openModal_infoblock() {
+  editingInfoblockId = null;
+  document.getElementById('infoblock-modal-title').textContent = 'הוסף מידע ללוח';
+  document.getElementById('btn-save-ib').textContent = 'שמור';
+  document.getElementById('ib-title').value = '';
+  document.getElementById('ib-content').value = '';
+  document.getElementById('ib-type').value = 'wifi';
+  document.getElementById('ib-order').value = '0';
+  document.getElementById('ib-active').value = 'true';
+  document.getElementById('modal-infoblock').classList.add('open');
+}
+
+function editInfoblock(id) {
+  const b = infoblocks.find(b=>(b.id||b._lid)==id);
+  if(!b) return;
+  editingInfoblockId = id;
+  document.getElementById('infoblock-modal-title').textContent = 'עריכת מידע';
+  document.getElementById('btn-save-ib').textContent = 'שמור שינויים';
+  document.getElementById('ib-type').value = b.block_type||b.type||'info';
+  document.getElementById('ib-title').value = b.title||'';
+  document.getElementById('ib-content').value = b.content||'';
+  document.getElementById('ib-order').value = b.display_order||0;
+  document.getElementById('ib-active').value = (b.active===false||b.active==='false')?'false':'true';
+  document.getElementById('modal-infoblock').classList.add('open');
+}
+
+async function saveInfoblock() {
+  const title = document.getElementById('ib-title').value.trim();
+  const content = document.getElementById('ib-content').value.trim();
+  if(!title||!content){toast('נא למלא כותרת ותוכן','error');return;}
+  const block_type = document.getElementById('ib-type').value;
+  const display_order = parseInt(document.getElementById('ib-order').value)||0;
+  const active = document.getElementById('ib-active').value === 'true';
+  const btn = document.getElementById('btn-save-ib');
+  btn.disabled=true; btn.textContent='שומר...';
+  try {
+    const body = {title, content, block_type, display_order, active};
+    if(editingInfoblockId) {
+      try { await patch('info_blocks', editingInfoblockId, body); }
+      catch { // fallback: localStorage
+        const idx = infoblocks.findIndex(b=>(b.id||b._lid)==editingInfoblockId);
+        if(idx>=0) infoblocks[idx] = {...infoblocks[idx],...body};
+        localStorage.setItem('infoblocks', JSON.stringify(infoblocks));
+      }
+      toast('המידע עודכן ✓');
+    } else {
+      try {
+        const r = await post('info_blocks', body);
+        infoblocks.push(r[0]);
+      } catch {
+        const lid = Date.now();
+        infoblocks.push({...body, _lid:lid});
+        localStorage.setItem('infoblocks', JSON.stringify(infoblocks));
+      }
+      toast('המידע נוסף ✓');
+    }
+    closeModal('modal-infoblock');
+    renderInfoblocks();
+    // also rebuild guest page cache
+    localStorage.setItem('infoblocks', JSON.stringify(infoblocks));
+  } catch(e){toast('שגיאה: '+e.message,'error');}
+  btn.disabled=false; btn.textContent='שמור';
+}
+
+async function toggleInfoblock(id, newActive) {
+  const b = infoblocks.find(b=>(b.id||b._lid)==id);
+  if(!b) return;
+  b.active = newActive;
+  try { await patch('info_blocks', id, {active:newActive}); } catch {}
+  localStorage.setItem('infoblocks', JSON.stringify(infoblocks));
+  renderInfoblocks();
+}
+
+async function deleteInfoblock(id) {
+  confirm('מחיקת מידע', 'למחוק את הבלוק הזה?', async()=>{
+    infoblocks = infoblocks.filter(b=>(b.id||b._lid)!=id);
+    try { 
+      const r = await fetch(`${SB_URL}/rest/v1/info_blocks?id=eq.${id}`,{method:'DELETE',headers:H});
+    } catch {}
+    localStorage.setItem('infoblocks', JSON.stringify(infoblocks));
+    renderInfoblocks();
+    toast('נמחק');
+  });
 }
 
 // ===== LOAD ALL DATA =====
