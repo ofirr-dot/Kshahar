@@ -721,7 +721,13 @@ textarea{min-height:70px;resize:vertical}
 // ===== CONFIG =====
 const SB_URL = 'https://tkkmkntylhlcmvkcwfxx.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRra21rbnR5bGhsY212a2N3Znh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MDg5MzEsImV4cCI6MjA5MTI4NDkzMX0.GSt59u8FU3AowX8zvTqqyfbOvMAOoEVjj0vNBT_nPcc';
-const H = {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+const H = {
+  'apikey': SB_KEY,
+  'Authorization': 'Bearer ' + SB_KEY,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=representation',
+  'X-Client-Info': 'hostel-app/1.0'
+};
 
 let rooms=[], reservations=[], guests=[], requests=[], maint=[], spaces=[];
 let refreshTimer = null;
@@ -738,13 +744,27 @@ async function api(table, q='') {
   return r.json();
 }
 async function post(table, body) {
-  const r = await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:H,body:JSON.stringify(body)});
-  if (!r.ok) throw new Error(await r.text());
-  return r.json();
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {method:'POST', headers:H, body:JSON.stringify(body)});
+  if (!r.ok) {
+    let errMsg = '';
+    try { const e = await r.json(); errMsg = e.message || e.hint || e.details || JSON.stringify(e); }
+    catch { errMsg = await r.text(); }
+    if (r.status === 401 || r.status === 403) throw new Error(`אין הרשאה (${r.status}): בדוק RLS policies ב-Supabase. ${errMsg}`);
+    throw new Error(`שגיאת שרת (${r.status}): ${errMsg}`);
+  }
+  const data = await r.json();
+  if (!Array.isArray(data) || data.length === 0) throw new Error('השרת לא החזיר נתונים — ייתכן שהוגדרה מדיניות RLS שמונעת כתיבה. בדוק את ה-policies ב-Supabase.');
+  return data;
 }
 async function patch(table, id, body) {
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`,{method:'PATCH',headers:H,body:JSON.stringify(body)});
-  if (!r.ok) throw new Error(await r.text());
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {method:'PATCH', headers:H, body:JSON.stringify(body)});
+  if (!r.ok) {
+    let errMsg = '';
+    try { const e = await r.json(); errMsg = e.message || e.hint || e.details || JSON.stringify(e); }
+    catch { errMsg = await r.text(); }
+    if (r.status === 401 || r.status === 403) throw new Error(`אין הרשאה (${r.status}): בדוק RLS policies ב-Supabase. ${errMsg}`);
+    throw new Error(`שגיאת שרת (${r.status}): ${errMsg}`);
+  }
 }
 
 // ===== CONNECTION =====
@@ -1016,8 +1036,8 @@ function confirmChangeRoomStatus(id, status, num) {
   confirm('שינוי סטטוס חדר', `לשנות חדר ${num} ל"${labels[status]||status}"?`, ()=>changeRoomStatus(id,status));
 }
 async function changeRoomStatus(id, status) {
-  try{await patch('rooms',id,{status});toast('סטטוס חדר עודכן');await loadAll();}
-  catch(e){toast('שגיאה','error');}
+  try { await patch('rooms', id, {status}); toast('סטטוס חדר עודכן ✓'); await loadAll(); }
+  catch(e) { toast('שגיאה: ' + e.message, 'error'); }
 }
 
 // ===== RESERVATIONS =====
@@ -1324,6 +1344,7 @@ async function saveReservation(){
     if(email) guest=guests.find(g=>g.email===email)||null;
     if(!guest){
       const res=await post('guests',{first_name:first,last_name:last,email:email||null,phone:phone||null,country:country||null,language_preference:lang});
+      if (!res || !res[0]) throw new Error('לא ניתן היה ליצור אורח — ייתכן שמדיניות RLS ב-Supabase מונעת הוספה. בדוק את ה-policies בטבלת guests.');
       guest=res[0];
     }
     const room=rooms.find(r=>r.id===roomId);
@@ -1402,7 +1423,21 @@ async function saveMaintenance(){
   }catch(e){toast('שגיאה: '+e.message,'error');}
 }
 
-// ===== LOAD ALL DATA =====
+// ===== RLS PERMISSION CHECK =====
+async function checkWritePermissions() {
+  // בדיקה שקטה: ניסיון OPTIONS/HEAD לוודא שיש הרשאות כתיבה
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/rooms?limit=1`, {
+      method: 'GET',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+    });
+    if (r.status === 401) {
+      toast('⚠️ אין הרשאות גישה ל-Supabase. בדוק את ה-API Key ואת מדיניות ה-RLS.', 'error');
+    }
+  } catch(e) { /* ignore */ }
+}
+
+
 async function loadAll(){
   setConn('loading');
   try{
@@ -1434,6 +1469,7 @@ refreshTimer = setInterval(loadAll, 60000);
 window.addEventListener('beforeunload', ()=>clearInterval(refreshTimer));
 
 loadAll();
+checkWritePermissions();
 
 // ===== PWA =====
 let deferredPrompt = null;
