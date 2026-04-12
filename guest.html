@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ברוכים הבאים</title>
+<meta name="theme-color" content="#E8A855">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F4F0;color:#1a1a1a;direction:rtl;min-height:100vh}
+:root{--warm:#E8A855;--warm-dark:#C47D20;--warm-text:#7A4D0A;--border:#e5e3dc;--surface:#fff;--radius:10px}
+.hero{background:linear-gradient(135deg,#E8A855 0%,#C47D20 100%);padding:28px 20px 24px;text-align:center;color:#fff;position:relative}
+.hero-icon{font-size:44px;margin-bottom:6px}
+.hero-title{font-size:22px;font-weight:700;margin-bottom:3px}
+.hero-sub{font-size:13px;opacity:.85}
+.lang-toggle{position:absolute;top:14px;left:14px;background:rgba(255,255,255,.2);border:none;color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:inherit}
+.container{max-width:580px;margin:0 auto;padding:16px 14px 40px}
+.weather-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px}
+.w-temp{font-size:36px;font-weight:700}
+.w-feels{font-size:13px;color:#666;padding-bottom:4px;align-self:flex-end}
+.w-desc{font-size:14px;color:#444;margin-top:2px}
+.w-city{font-size:12px;color:#999;margin-top:2px}
+.w-detail{font-size:12px;color:#666;margin-top:6px;display:flex;gap:14px;flex-wrap:wrap}
+.block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden}
+.block-head{display:flex;align-items:center;gap:10px;padding:13px 15px 8px}
+.block-icon{font-size:20px;flex-shrink:0}
+.block-title{font-size:15px;font-weight:600}
+.block-body{padding:2px 15px 13px;font-size:14px;line-height:1.7;color:#333;white-space:pre-line}
+.wifi-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:4px 15px 13px}
+.wifi-field{background:#E6F1FB;border-radius:8px;padding:12px 13px;cursor:pointer;transition:background .15s}
+.wifi-field:hover{background:#d0e8f7}
+.wifi-label{font-size:10px;color:#185FA5;font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.wifi-val{font-size:15px;font-weight:700;color:#0C447C;user-select:all;word-break:break-all;line-height:1.3}
+.wifi-hint{font-size:11px;color:#378ADD;margin-top:4px}
+.wifi-copied{font-size:11px;color:#27500A;display:none;margin-top:3px;font-weight:600}
+.prayer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;padding:4px 15px 13px}
+.prayer-item{background:#FAEEDA;border-radius:8px;padding:9px;text-align:center}
+.prayer-name{font-size:11px;color:#633806;font-weight:600;margin-bottom:3px}
+.prayer-time{font-size:16px;font-weight:700;color:#633806}
+.prayer-item.next-p{background:#E8A855}
+.prayer-item.next-p .prayer-name,.prayer-item.next-p .prayer-time{color:#fff}
+.next-label{font-size:9px;color:rgba(255,255,255,.85);margin-top:2px}
+.emerg-list{padding:4px 15px 13px}
+.emerg-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#FCEBEB;border-radius:8px;margin-bottom:6px}
+.emerg-item:last-child{margin-bottom:0}
+.emerg-name{font-size:13px;color:#791F1F;font-weight:500}
+.emerg-num{font-size:16px;font-weight:700;color:#A32D2D;text-decoration:none}
+.contact-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.contact-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit;text-decoration:none;transition:opacity .15s}
+.contact-btn:hover{opacity:.85}
+.wa-btn{background:#25D366;color:#fff}
+.mail-btn{background:#1a73e8;color:#fff}
+.urgent-card{background:var(--surface);border:2px solid #FAC775;border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.urgent-title{font-size:14px;font-weight:600;color:#633806;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.urgent-textarea{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;min-height:70px;outline:none;margin-bottom:8px}
+.urgent-textarea:focus{border-color:#E8A855}
+.urgent-row{display:flex;gap:8px}
+.urgent-name-in{flex:1;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none}
+.urgent-name-in:focus{border-color:#E8A855}
+.urgent-send-btn{padding:9px 18px;background:#E8A855;color:#7A4D0A;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.urgent-send-btn:hover{background:#C47D20;color:#fff}
+.urgent-sent-msg{background:#EAF3DE;border:1px solid #C0DD97;border-radius:8px;padding:10px 14px;font-size:13px;color:#27500A;display:none;text-align:center;margin-top:8px}
+.refresh-btn{display:block;margin:16px auto 0;padding:10px 22px;background:transparent;color:#999;border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+.footer-txt{text-align:center;padding:18px;font-size:11px;color:#bbb}
+.sk{background:linear-gradient(90deg,#eee 25%,#e4e4e4 50%,#eee 75%);background-size:200% 100%;animation:sh 1.5s infinite;border-radius:6px;height:14px;margin:4px 0}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <button class="lang-toggle" id="lang-toggle-btn" onclick="toggleGuestLang()">EN</button>
+  <div class="hero-icon">🏠</div>
+  <div class="hero-title" id="hero-title">ברוכים הבאים!</div>
+  <div class="hero-sub" id="hero-sub">כל המידע לשהייה נעימה</div>
+</div>
+
+<div class="container">
+
+  <div class="weather-card">
+    <div style="font-size:42px" id="w-icon">🌤</div>
+    <div style="flex:1">
+      <div style="display:flex;align-items:baseline;gap:6px">
+        <div class="w-temp" id="w-temp"><div class="sk" style="width:70px;height:32px"></div></div>
+        <div class="w-feels" id="w-feels"></div>
+      </div>
+      <div class="w-desc" id="w-desc"><div class="sk" style="width:110px"></div></div>
+      <div class="w-city" id="w-city"></div>
+      <div class="w-detail" id="w-detail"></div>
+    </div>
+  </div>
+
+  <div class="contact-bar" id="contact-bar" style="display:none">
+    <a id="wa-btn" class="contact-btn wa-btn" href="#" target="_blank">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <span id="wa-label">שלח הודעה</span>
+    </a>
+    <a id="mail-btn" class="contact-btn mail-btn" href="#" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+      <span id="mail-label">שלח מייל</span>
+    </a>
+  </div>
+
+  <div class="urgent-card" id="urgent-section" style="display:none">
+    <div class="urgent-title">🆘 <span id="urgent-title-text">הודעה דחופה לצוות</span></div>
+    <textarea class="urgent-textarea" id="urgent-msg" placeholder="תאר את הבעיה בקצרה..."></textarea>
+    <div class="urgent-row">
+      <input class="urgent-name-in" type="text" id="urgent-name" placeholder="שמך (אופציונלי)">
+      <button class="urgent-send-btn" onclick="sendUrgent()" id="urgent-send-btn">שלח</button>
+    </div>
+    <div class="urgent-sent-msg" id="urgent-sent">✓ ההודעה נשלחה! הצוות יחזור אליך בהקדם.</div>
+  </div>
+
+  <div id="blocks-container">
+    <div class="block"><div class="block-head"><div class="block-icon">⏳</div><div class="block-title"><div class="sk" style="width:120px"></div></div></div><div class="block-body"><div class="sk"></div><div class="sk" style="width:75%"></div></div></div>
+  </div>
+
+  <button class="refresh-btn" onclick="init()">↻ <span id="refresh-label">רענן</span></button>
+  <div class="footer-txt" id="footer-text">מתעדכן כל 5 דקות</div>
+</div>
+
+<script>
+const SB_URL='https://tkkmkntylhlcmvkcwfxx.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRra21rbnR5bGhsY212a2N3Znh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MDg5MzEsImV4cCI6MjA5MTI4NDkzMX0.GSt59u8FU3AowX8zvTqqyfbOvMAOoEVjj0vNBT_nPcc';
+const SBH={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+const IB_ICONS={wifi:'📶',prayer:'🕍',weather:'🌤',events:'🎉',food:'🍽',rules:'📜',transport:'🚌',emergency:'🆘',info:'ℹ️'};
+const IB_BG={wifi:'#E6F1FB',prayer:'#FAEEDA',weather:'#EAF3DE',events:'#EEEDFE',food:'#FFF3E0',rules:'#F1EFE8',transport:'#E6F1FB',emergency:'#FCEBEB',info:'#F5F4F0'};
+const IB_TC={wifi:'#0C447C',prayer:'#633806',weather:'#27500A',events:'#3C3489',food:'#7A4D0A',rules:'#5F5E5A',transport:'#0C447C',emergency:'#791F1F',info:'#5F5E5A'};
+
+let gLang=localStorage.getItem('guest_lang')||'he';
+let hostelSettings={};
+
+const GL={
+  he:{title:'ברוכים הבאים!',sub:'כל המידע לשהייה נעימה',wa:'שלח הודעה',mail:'שלח מייל',urgent_title:'הודעה דחופה לצוות',send:'שלח',sent:'✓ ההודעה נשלחה! הצוות יחזור אליך בהקדם.',msg_ph:'תאר את הבעיה בקצרה...',name_ph:'שמך (אופציונלי)',refresh:'רענן',footer:'מתעדכן כל 5 דקות',next:'הבא',en_btn:'EN',ssid:'שם הרשת',password:'סיסמה',tap_copy:'לחץ להעתקה'},
+  en:{title:'Welcome!',sub:'Everything you need for a great stay',wa:'Send message',mail:'Send email',urgent_title:'Urgent message to staff',send:'Send',sent:'✓ Message sent! The team will get back to you shortly.',msg_ph:'Describe the issue briefly...',name_ph:'Your name (optional)',refresh:'Refresh',footer:'Updates every 5 minutes',next:'Next',en_btn:'עב',ssid:'Network name',password:'Password',tap_copy:'Tap to copy'}
+};
+
+function toggleGuestLang(){setGuestLang(gLang==='he'?'en':'he');}
+function setGuestLang(l){
+  gLang=l;localStorage.setItem('guest_lang',l);
+  document.documentElement.lang=l;document.documentElement.dir=l==='he'?'rtl':'ltr';
+  const t=GL[l]||GL.he;
+  document.getElementById('lang-toggle-btn').textContent=t.en_btn;
+  document.getElementById('hero-title').textContent=t.title;
+  document.getElementById('hero-sub').textContent=t.sub;
+  document.getElementById('wa-label').textContent=t.wa;
+  document.getElementById('mail-label').textContent=t.mail;
+  document.getElementById('urgent-title-text').textContent=t.urgent_title;
+  document.getElementById('urgent-send-btn').textContent=t.send;
+  document.getElementById('urgent-msg').placeholder=t.msg_ph;
+  document.getElementById('urgent-name').placeholder=t.name_ph;
+  document.getElementById('refresh-label').textContent=t.refresh;
+  document.getElementById('footer-text').textContent=t.footer;
+  // re-render blocks for bilingual prayer labels etc
+}
+
+async function loadWeather(){
+  const coords=await new Promise(res=>{
+    if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lon:p.coords.longitude}),()=>res({lat:31.7683,lon:35.2137}),{timeout:5000});
+    else res({lat:31.7683,lon:35.2137});
+  });
+  try{
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&wind_speed_unit=kmh&timezone=auto`);
+    const d=await r.json();const cur=d.current;const wc=cur.weather_code||0;
+    const icons={0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌧',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'🌨',73:'🌨',75:'❄️',80:'🌦',81:'🌧',82:'🌩',95:'⛈',96:'⛈',99:'⛈'};
+    const he_d={0:'שמש מלאה',1:'בהיר בעיקר',2:'מעונן חלקית',3:'מעונן',45:'ערפל',51:'גשם קל',53:'גשם',61:'גשם קל',63:'גשם',65:'גשם חזק',71:'שלג קל',75:'שלג כבד',80:'גשם קל',82:'סופת גשמים',95:'סופת ברקים'};
+    const en_d={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',51:'Light drizzle',53:'Drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',75:'Heavy snow',80:'Showers',82:'Rain showers',95:'Thunderstorm'};
+    const desc=(gLang==='en'?en_d:he_d)[wc]||'';
+    const feelsLabel=gLang==='en'?'Feels ':'מרגיש ';
+    document.getElementById('w-icon').textContent=icons[wc]||'🌤';
+    document.getElementById('w-temp').textContent=Math.round(cur.temperature_2m)+'°';
+    document.getElementById('w-feels').textContent=feelsLabel+Math.round(cur.apparent_temperature)+'°';
+    document.getElementById('w-desc').textContent=desc;
+    document.getElementById('w-detail').innerHTML=`<span>💧 ${cur.relative_humidity_2m}%</span><span>💨 ${Math.round(cur.wind_speed_10m)} km/h</span>`;
+    try{
+      const geo=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${coords.lat}&lon=${coords.lon}&format=json`);
+      const gd=await geo.json();
+      document.getElementById('w-city').textContent=gd.address?.city||gd.address?.town||gd.address?.village||'';
+    }catch{}
+  }catch{document.getElementById('w-temp').textContent='—';}
+}
+
+function setupContact(){
+  const s=hostelSettings;let show=false;
+  if(s.whatsapp){
+    const msg=encodeURIComponent(gLang==='he'?'שלום, אני שוהה באכסניה וצריך עזרה...':'Hello, I am staying at the hostel and need help...');
+    document.getElementById('wa-btn').href='https://wa.me/'+s.whatsapp+'?text='+msg;
+    document.getElementById('wa-btn').style.display='flex';show=true;
+  }else document.getElementById('wa-btn').style.display='none';
+  if(s.contact_email){
+    const subj=encodeURIComponent(gLang==='he'?'פנייה מאורח':'Guest Inquiry');
+    const body=encodeURIComponent(gLang==='he'?'שלום,\n\n':'Hello,\n\n');
+    document.getElementById('mail-btn').href=`mailto:${s.contact_email}?subject=${subj}&body=${body}`;
+    document.getElementById('mail-btn').style.display='flex';show=true;
+  }else document.getElementById('mail-btn').style.display='none';
+  document.getElementById('contact-bar').style.display=show?'grid':'none';
+  document.getElementById('urgent-section').style.display=show?'block':'none';
+}
+
+async function sendUrgent(){
+  const msg=document.getElementById('urgent-msg').value.trim();
+  const name=document.getElementById('urgent-name').value.trim();
+  if(!msg){document.getElementById('urgent-msg').focus();return;}
+  const btn=document.getElementById('urgent-send-btn');
+  btn.disabled=true;
+  try{
+    const body={
+      title:(gLang==='en'?'Urgent message from guest page':'הודעה דחופה מדף אורחים'),
+      description:(name?'['+name+'] ':'')+msg,
+      priority:'urgent',status:'open',request_type:'urgent'
+    };
+    await fetch(SB_URL+'/rest/v1/guest_requests',{method:'POST',headers:SBH,body:JSON.stringify(body)});
+  }catch{}
+  document.getElementById('urgent-msg').value='';
+  document.getElementById('urgent-name').value='';
+  const sentEl=document.getElementById('urgent-sent');
+  sentEl.textContent=(GL[gLang]||GL.he).sent;
+  sentEl.style.display='block';
+  setTimeout(()=>sentEl.style.display='none',5000);
+  btn.disabled=false;
+}
+
+async function loadBlocks(){
+  let blocks=[];
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/info_blocks?active=eq.true&order=display_order,created_at',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});
+    if(r.ok)blocks=await r.json();else throw 0;
+  }catch{
+    blocks=JSON.parse(localStorage.getItem('infoblocks')||'[]').filter(b=>b.active!==false&&b.active!=='false');
+  }
+  renderBlocks(blocks);
+}
+
+function renderBlocks(blocks){
+  const el=document.getElementById('blocks-container');
+  if(!blocks.length){el.innerHTML='<div style="text-align:center;padding:28px;color:#999;font-size:14px">'+(gLang==='en'?'No info yet':'אין מידע להצגה כרגע')+'</div>';return;}
+  el.innerHTML=blocks.sort((a,b)=>(a.display_order||0)-(b.display_order||0)).map(b=>{
+    const type=b.block_type||b.type||'info';
+    if(type==='wifi')return renderWifi(b);
+    if(type==='prayer')return renderPrayer(b);
+    if(type==='emergency')return renderEmergency(b);
+    const bg=IB_BG[type]||'#F5F4F0';
+    const tc=IB_TC[type]||'#333';
+    const icon=IB_ICONS[type]||'ℹ️';
+    return `<div class="block"><div class="block-head"><div class="block-icon">${icon}</div><div class="block-title">${b.title}</div></div><div class="block-body" style="background:${bg};margin:0 15px 13px;border-radius:8px;padding:11px 13px;color:${tc}">${b.content||''}</div></div>`;
+  }).join('');
+}
+
+function renderWifi(b){
+  const lines=(b.content||'').split('\n');
+  const ssid=lines[0]||'';
+  const pass=lines[1]||lines[0]||'';
+  const t=GL[gLang]||GL.he;
+  const uid='w'+Math.random().toString(36).slice(2,7);
+  return `<div class="block">
+    <div class="block-head"><div class="block-icon">📶</div><div class="block-title">${b.title}</div></div>
+    <div class="wifi-row">
+      <div class="wifi-field" onclick="copyText('${ssid.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}','sc${uid}')">
+        <div class="wifi-label">${t.ssid}</div>
+        <div class="wifi-val">${ssid}</div>
+        <div class="wifi-hint">${t.tap_copy}</div>
+        <div class="wifi-copied" id="sc${uid}">✓ ${gLang==='en'?'Copied!':'הועתק!'}</div>
+      </div>
+      <div class="wifi-field" onclick="copyText('${pass.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}','pc${uid}')">
+        <div class="wifi-label">${t.password}</div>
+        <div class="wifi-val">${pass}</div>
+        <div class="wifi-hint">${t.tap_copy}</div>
+        <div class="wifi-copied" id="pc${uid}">✓ ${gLang==='en'?'Copied!':'הועתק!'}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function copyText(val,confirmedId){
+  navigator.clipboard.writeText(val).then(()=>{
+    const el=document.getElementById(confirmedId);
+    if(el){el.style.display='block';setTimeout(()=>el.style.display='none',2200);}
+  });
+}
+
+function renderPrayer(b){
+  const t=GL[gLang]||GL.he;
+  const lines=(b.content||'').split('\n').filter(l=>l.trim());
+  const nowMin=new Date().getHours()*60+new Date().getMinutes();
+  let nextIdx=-1;
+  const parsed=lines.map((l,i)=>{
+    const parts=l.trim().split(/\s+/);
+    const name=parts.slice(0,-1).join(' ');
+    const time=parts[parts.length-1]||'';
+    const [h,m]=time.split(':').map(Number);
+    if(nextIdx===-1&&(h*60+(m||0))>nowMin)nextIdx=i;
+    return {name,time};
+  });
+  const items=parsed.map((p,i)=>`<div class="prayer-item${i===nextIdx?' next-p':''}"><div class="prayer-name">${p.name}</div><div class="prayer-time">${p.time}</div>${i===nextIdx?`<div class="next-label">${t.next}</div>`:''}</div>`).join('');
+  return `<div class="block"><div class="block-head"><div class="block-icon">🕍</div><div class="block-title">${b.title}</div></div><div class="prayer-grid">${items}</div></div>`;
+}
+
+function renderEmergency(b){
+  const lines=(b.content||'').split('\n').filter(l=>l.trim());
+  const items=lines.map(l=>{
+    const idx=l.lastIndexOf(':');
+    const num=idx>=0?l.slice(idx+1).trim():l;
+    const name=idx>=0?l.slice(0,idx).trim():'';
+    return `<div class="emerg-item"><span class="emerg-name">${name}</span><a href="tel:${num.replace(/\D/g,'')}" class="emerg-num">${num}</a></div>`;
+  }).join('');
+  return `<div class="block"><div class="block-head"><div class="block-icon">🆘</div><div class="block-title">${b.title}</div></div><div class="emerg-list">${items}</div></div>`;
+}
+
+async function init(){
+  hostelSettings=JSON.parse(localStorage.getItem('hostel_settings')||'{}');
+  setGuestLang(gLang);
+  setupContact();
+  const name=hostelSettings.hostel_name||'האכסניה שלי';
+  document.title=(gLang==='en'?'Welcome — ':'ברוכים הבאים — ')+name;
+  await Promise.all([loadWeather(),loadBlocks()]);
+}
+init();
+setInterval(init,5*60*1000);
+</script>
+</body>
+</html>
