@@ -890,7 +890,7 @@ function toast(msg, type='success') {
 
 // ===== CONFIRM DIALOG =====
 let confirmCallback = null;
-function confirm(title, msg, cb) {
+function showConfirm(title, msg, cb) {
   document.getElementById('confirm-title').textContent = title;
   document.getElementById('confirm-msg').textContent = msg;
   confirmCallback = cb;
@@ -1118,7 +1118,7 @@ async function deleteRoom(id, num) {
     toast(`לא ניתן למחוק את חדר ${num} — יש לו ${linked.length} הזמנות מקושרות. שנה את סטטוסו ל"תחזוקה" במקום.`,'error');
     return;
   }
-  confirm('מחיקת חדר', `למחוק את חדר ${num}? פעולה זו לא ניתנת לביטול.`, async()=>{
+  showConfirm('מחיקת חדר', `למחוק את חדר ${num}? פעולה זו לא ניתנת לביטול.`, async()=>{
     try{
       const r = await fetch(`${SB_URL}/rest/v1/rooms?id=eq.${id}`,{method:'DELETE',headers:H});
       if(!r.ok) throw new Error(await r.text());
@@ -1144,7 +1144,7 @@ function searchRooms(q){
 // FIX: confirm before changing room status
 function confirmChangeRoomStatus(id, status, num) {
   const labels={available:'פנוי',needs_cleaning:'ניקיון',needs_maintenance:'תחזוקה'};
-  confirm('שינוי סטטוס חדר', `לשנות חדר ${num} ל"${labels[status]||status}"?`, ()=>changeRoomStatus(id,status));
+  showConfirm('שינוי סטטוס חדר', `לשנות חדר ${num} ל"${labels[status]||status}"?`, ()=>changeRoomStatus(id,status));
 }
 async function changeRoomStatus(id, status) {
   try{await patch('rooms',id,{status});toast('סטטוס חדר עודכן');await loadAll();}
@@ -1185,7 +1185,7 @@ async function quickCheckin(id, status) {
   const next = map[status];
   if(!next){toast('לא ניתן לעדכן סטטוס זה','error');return;}
   const labels={checked_in:'צ׳ק-אין',checked_out:'צ׳ק-אאוט'};
-  confirm('עדכון סטטוס הזמנה', `לבצע ${labels[next]}?`, async()=>{
+  showConfirm('עדכון סטטוס הזמנה', `לבצע ${labels[next]}?`, async()=>{
     try{await patch('reservations',id,{status:next});toast('סטטוס עודכן!');await loadAll();}
     catch(e){toast('שגיאה: '+e.message,'error');}
   });
@@ -1342,7 +1342,7 @@ async function saveSpace() {
 }
 
 async function deleteSpace(id, name) {
-  confirm('מחיקת חלל', `למחוק את "${name}"? פעולה זו לא ניתנת לביטול.`, async()=>{
+  showConfirm('מחיקת חלל', `למחוק את "${name}"? פעולה זו לא ניתנת לביטול.`, async()=>{
     try{
       const r = await fetch(`${SB_URL}/rest/v1/shared_spaces?id=eq.${id}`,{method:'DELETE',headers:H});
       if(!r.ok) throw new Error(await r.text());
@@ -1763,7 +1763,26 @@ async function authSubmit() {
       body:JSON.stringify(body)
     });
     const d = await r.json();
-    if(!r.ok) throw new Error(d.error_description||d.msg||d.error||'שגיאת כניסה');
+    if(!r.ok) {
+      const errMsg = d.error_description||d.msg||d.error||'שגיאת כניסה';
+      // Handle common Supabase errors in Hebrew
+      if(errMsg.includes('Invalid login')||errMsg.includes('invalid_credentials')) throw new Error('אימייל או סיסמה שגויים');
+      if(errMsg.includes('Email not confirmed')) throw new Error('האימייל לא אומת — בדוק את תיבת הדואר ולחץ על הקישור לאישור');
+      if(errMsg.includes('User already registered')) throw new Error('האימייל כבר רשום — נסה להתחבר במקום');
+      if(errMsg.includes('Password should be')) throw new Error('הסיסמה חייבת להיות לפחות 6 תווים');
+      if(errMsg.includes('signup_disabled')||errMsg.includes('not_enabled')) {
+        document.getElementById('auth-setup-hint').style.display='block';
+        throw new Error('ההרשמה מושבתת — הפעל Email Auth ב-Supabase Dashboard → Authentication → Providers → Email');
+      }
+      throw new Error(errMsg);
+    }
+    if(authMode==='signup' && !d.access_token) {
+      // Supabase requires email confirmation — session not returned yet
+      showAuthError('📧 נשלח אימייל אישור לכתובת שלך. לחץ על הקישור ואז חזור להתחבר.', true);
+      authTabSwitch('login');
+      return;
+    }
+    if(!d.access_token) throw new Error('לא התקבל token — בדוק הגדרות Supabase');
     localStorage.setItem('sb_session', JSON.stringify(d));
     currentUser = d.user;
     onAuthSuccess(d);
@@ -1795,6 +1814,18 @@ async function forgotPassword() {
   } catch(e){showAuthError(e.message);}
 }
 
+function skipAuth() {
+  currentUser = {email:'guest@local', user_metadata:{full_name:'מנהל'}};
+  hideAuthOverlay();
+  const chipEl = document.getElementById('user-chip-name');
+  const avatarEl = document.getElementById('user-avatar-sm');
+  if(chipEl) chipEl.textContent = 'מנהל';
+  if(avatarEl) avatarEl.textContent = 'מנ';
+  const infoEl = document.getElementById('auth-user-info');
+  if(infoEl) infoEl.textContent = 'כניסה ללא חשבון';
+  loadAll();
+}
+
 function showAuthError(msg, isInfo=false) {
   const el = document.getElementById('auth-error');
   el.textContent = msg;
@@ -1821,7 +1852,7 @@ function onAuthSuccess(session) {
 }
 
 function signOut() {
-  confirm('התנתקות', 'להתנתק מהמערכת?', ()=>{
+  showConfirm('התנתקות', 'להתנתק מהמערכת?', ()=>{
     localStorage.removeItem('sb_session');
     currentUser = null;
     // reset header to anon key
@@ -2086,7 +2117,7 @@ async function toggleInfoblock(id,newActive){
   renderInfoblocks();
 }
 async function deleteInfoblock(id){
-  confirm('מחיקה','למחוק?',async()=>{
+  showConfirm('מחיקה','למחוק?',async()=>{
     infoblocks=infoblocks.filter(b=>(b.id||b._lid)!=id);
     try{await fetch(`${SB_URL}/rest/v1/info_blocks?id=eq.${id}`,{method:'DELETE',headers:H});}catch{}
     localStorage.setItem('infoblocks',JSON.stringify(infoblocks));
@@ -2104,6 +2135,9 @@ async function deleteInfoblock(id){
       <div class="auth-logo-icon">🏠</div>
       <div class="auth-logo-title" data-i18n="app_name">האכסניה שלי</div>
       <div class="auth-logo-sub" data-i18n="auth_sub">מערכת ניהול · כניסה</div>
+    <div id="auth-setup-hint" style="font-size:11px;color:#BA7517;background:#FAEEDA;border-radius:6px;padding:6px 10px;margin-top:8px;display:none">
+      ⚠️ לפני שימוש: ב-Supabase → Authentication → Providers → הפעל Email
+    </div>
     </div>
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="authTabSwitch('login')" id="auth-tab-login" data-i18n="sign_in">כניסה</button>
@@ -2133,8 +2167,9 @@ async function deleteInfoblock(id){
       </div>
       <div id="auth-error" style="font-size:12px;color:#A32D2D;margin-bottom:10px;display:none"></div>
       <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="authSubmit()" id="auth-submit-btn" data-i18n="sign_in">כניסה</button>
-      <div style="text-align:center;margin-top:10px">
+      <div style="text-align:center;margin-top:10px;display:flex;justify-content:space-between;align-items:center">
         <button style="background:none;border:none;color:var(--warm-dark);font-size:12px;cursor:pointer;font-family:inherit" onclick="forgotPassword()" data-i18n="forgot_pass">שכחת סיסמה?</button>
+        <button style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;font-family:inherit" onclick="skipAuth()" title="כניסה ללא חשבון (מצב פיתוח)">כניסה ללא חשבון ←</button>
       </div>
     </div>
   </div>
