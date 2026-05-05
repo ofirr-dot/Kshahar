@@ -1,0 +1,544 @@
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Welcome to Equip Center</title>
+<meta name="theme-color" content="#E8A855">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F4F0;color:#1a1a1a;overflow-x:hidden}
+:root{--warm:#E8A855;--warm-light:#FFF3E0;--warm-dark:#C47D20;--warm-text:#7A4D0A;--surface:#fff;--border:#e5e3dc;--text:#1a1a1a;--text2:#666;--text3:#999}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--warm) 0%,var(--warm-dark) 100%);color:#fff;padding:env(safe-area-inset-top) 20px 24px 20px;text-align:center;position:relative;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.hero-icon{font-size:48px;margin-bottom:8px;display:block}
+.hero-title{font-size:28px;font-weight:700;margin-bottom:4px;letter-spacing:.5px}
+.hero-sub{font-size:14px;opacity:.9}
+
+/* ADMIN BUTTON */
+.admin-btn{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 12px;border-radius:20px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500;transition:all .2s}
+.admin-btn:hover{background:rgba(255,255,255,.3)}
+
+/* MAIN CONTAINER */
+.container{max-width:600px;margin:0 auto;padding:20px 16px 40px}
+
+/* BLOCKS */
+.block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;overflow:hidden}
+.block-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.block-icon{font-size:24px;flex-shrink:0}
+.block-title{font-size:14px;font-weight:600;color:var(--text)}
+.block-body{font-size:13px;line-height:1.7;color:var(--text2)}
+
+/* WIFI DISPLAY */
+.wifi-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 0}
+.wifi-field{background:linear-gradient(135deg,#E6F1FB 0%,#D6E7F8 100%);border-radius:8px;padding:12px;cursor:pointer;transition:all .2s;border:1px solid #B5D4F4}
+.wifi-field:active{transform:scale(.98);background:#C8DFF5}
+.wifi-label{font-size:10px;color:#185FA5;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.wifi-value{font-size:15px;font-weight:700;color:#0C447C;user-select:all;word-break:break-all;line-height:1.3}
+.wifi-hint{font-size:10px;color:#378ADD;margin-top:4px}
+.copied-msg{font-size:10px;color:#27500A;display:none;margin-top:4px;font-weight:600}
+
+/* RULES LIST */
+.rules-list{list-style:none;padding:0}
+.rules-list li{padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start}
+.rules-list li:last-child{border-bottom:none}
+.rule-num{background:var(--warm-light);color:var(--warm-dark);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0;font-size:13px}
+.rule-text{font-size:13px;color:var(--text);padding-top:2px}
+
+/* CONTACTS */
+.contact-list{list-style:none;padding:0}
+.contact-item{padding:12px;background:#FAFAF8;border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.contact-item:last-child{margin-bottom:0}
+.contact-name{font-size:13px;font-weight:600;color:var(--text)}
+.contact-phone{font-size:13px;color:var(--warm-dark);font-weight:500;text-decoration:none;cursor:pointer;display:flex;align-items:center;gap:6px}
+.contact-phone:active{opacity:.7}
+.whatsapp-icon{font-size:14px}
+
+/* WEATHER */
+.weather-card{background:linear-gradient(135deg,#E6F1FB 0%,#D6E7F8 100%);padding:12px;border-radius:8px;display:flex;gap:12px;align-items:center;text-align:center}
+.weather-icon{font-size:32px}
+.weather-info{flex:1;text-align:left}
+.weather-temp{font-size:20px;font-weight:700;color:#0C447C}
+.weather-desc{font-size:12px;color:#185FA5;margin-top:2px}
+.weather-detail{font-size:11px;color:#378ADD;margin-top:4px;display:flex;gap:10px;flex-wrap:wrap}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;z-index:100}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:12px 12px 0 0;padding:24px 20px;width:100%;max-height:90vh;overflow-y:auto;max-width:600px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.modal-title{font-size:17px;font-weight:600}
+.modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--text2)}
+
+/* FORMS */
+.form-group{margin-bottom:14px;display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:12px;color:var(--text2);font-weight:600}
+input,select,textarea{padding:10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--warm)}
+textarea{min-height:70px;resize:vertical}
+
+/* BUTTONS */
+.btn{padding:10px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;font-size:13px;font-family:inherit;font-weight:500;transition:all .15s}
+.btn:active{opacity:.8}
+.btn-primary{background:var(--warm);color:var(--warm-text);border-color:var(--warm)}
+.btn-primary:active{background:var(--warm-dark)}
+.btn-sm{padding:8px 12px;font-size:12px}
+.btn-block{width:100%;margin-bottom:8px}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:13px;display:none;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.toast.show{display:block;animation:slideIn .3s}
+.toast.success{border-color:#C0DD97;background:#EAF3DE;color:#27500A}
+.toast.error{border-color:#F7C1C1;background:#FCEBEB;color:#791F1F}
+@keyframes slideIn{from{transform:translateX(-400px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* RESPONSIVE */
+@media(max-width:480px){
+  .hero{padding:env(safe-area-inset-top) 16px 18px}
+  .hero-title{font-size:24px}
+  .container{padding:16px 12px 32px}
+  .wifi-row{grid-template-columns:1fr}
+  .modal{border-radius:16px 16px 0 0;padding:20px 16px}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="hero-icon">🏢</span>
+  <div class="hero-title">Equip Center</div>
+  <div class="hero-sub">Welcome to our facility!</div>
+  <button class="admin-btn" onclick="openModal('modal-admin')">⚙ Admin</button>
+</div>
+
+<div class="container">
+
+  <!-- WIFI -->
+  <div class="block" id="wifi-block" style="display:none">
+    <div class="block-header">
+      <span class="block-icon">📶</span>
+      <span class="block-title">WiFi Network</span>
+    </div>
+    <div class="wifi-row">
+      <div class="wifi-field" onclick="copyToClipboard(this)">
+        <div class="wifi-label">Network Name</div>
+        <div class="wifi-value" id="wifi-ssid">—</div>
+        <div class="wifi-hint">Click to copy</div>
+        <div class="copied-msg">✓ Copied</div>
+      </div>
+      <div class="wifi-field" onclick="copyToClipboard(this)">
+        <div class="wifi-label">Password</div>
+        <div class="wifi-value" id="wifi-password">—</div>
+        <div class="wifi-hint">Click to copy</div>
+        <div class="copied-msg">✓ Copied</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEATHER -->
+  <div class="block" id="weather-block" style="display:none">
+    <div class="block-header">
+      <span class="block-icon">☀️</span>
+      <span class="block-title">Weather in Haifa</span>
+    </div>
+    <div class="weather-card" id="weather-card">
+      <div class="weather-icon">—</div>
+      <div class="weather-info">
+        <div class="weather-temp" id="weather-temp">—</div>
+        <div class="weather-desc" id="weather-desc">Loading...</div>
+        <div class="weather-detail" id="weather-detail"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RULES -->
+  <div class="block" id="rules-block" style="display:none">
+    <div class="block-header">
+      <span class="block-icon">📋</span>
+      <span class="block-title">House Rules</span>
+    </div>
+    <ul class="rules-list" id="rules-list"></ul>
+  </div>
+
+  <!-- CONTACTS -->
+  <div class="block" id="contacts-block" style="display:none">
+    <div class="block-header">
+      <span class="block-icon">☎️</span>
+      <span class="block-title">Contact Us</span>
+    </div>
+    <ul class="contact-list" id="contacts-list"></ul>
+  </div>
+
+  <!-- INFO -->
+  <div class="block" id="info-block" style="display:none">
+    <div class="block-header">
+      <span class="block-icon">ℹ️</span>
+      <span class="block-title">Additional Information</span>
+    </div>
+    <div class="block-body" id="info-text"></div>
+  </div>
+
+</div>
+
+<!-- ===== MODAL: Admin ===== -->
+<div class="modal-overlay" id="modal-admin">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📋 Manage Information</div>
+      <button class="modal-close" onclick="closeModal('modal-admin')">×</button>
+    </div>
+
+    <!-- TABS -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:12px;overflow-x:auto">
+      <button class="btn btn-sm" style="border-bottom:2px solid var(--warm);border-radius:0;background:transparent;color:var(--warm);font-weight:600;white-space:nowrap" onclick="switchAdminTab('wifi',this)">WiFi</button>
+      <button class="btn btn-sm" style="border-radius:0;background:transparent;white-space:nowrap" onclick="switchAdminTab('rules',this)">Rules</button>
+      <button class="btn btn-sm" style="border-radius:0;background:transparent;white-space:nowrap" onclick="switchAdminTab('contacts',this)">Contacts</button>
+      <button class="btn btn-sm" style="border-radius:0;background:transparent;white-space:nowrap" onclick="switchAdminTab('info',this)">Info</button>
+    </div>
+
+    <!-- WIFI SETTINGS -->
+    <div id="tab-wifi" style="display:block">
+      <div class="form-group">
+        <label class="form-label">WiFi Network Name (SSID)</label>
+        <input type="text" id="admin-wifi-ssid" placeholder="Network name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="text" id="admin-wifi-password" placeholder="Password">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="saveWiFi()">💾 Save WiFi</button>
+    </div>
+
+    <!-- RULES SETTINGS -->
+    <div id="tab-rules" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Rule 1</label>
+        <input type="text" id="admin-rule-1" placeholder="Write a rule...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rule 2</label>
+        <input type="text" id="admin-rule-2" placeholder="Write a rule...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rule 3</label>
+        <input type="text" id="admin-rule-3" placeholder="Write a rule...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rule 4</label>
+        <input type="text" id="admin-rule-4" placeholder="Write a rule...">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="saveRules()">💾 Save Rules</button>
+    </div>
+
+    <!-- CONTACTS SETTINGS -->
+    <div id="tab-contacts" style="display:none">
+      <div style="margin-bottom:16px;padding:12px;background:#FFF3E0;border-radius:8px;border-left:3px solid var(--warm)">
+        <div style="font-size:12px;color:var(--warm-dark)">
+          <strong>📱 Main WhatsApp Number</strong><br>
+          This is the primary contact for guests. Format: 05x-xxxxxxx or +972...
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">WhatsApp Number</label>
+        <input type="text" id="admin-contact-whatsapp" placeholder="05x-xxxxxxx or +972...">
+      </div>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px">
+          <strong>Additional Contacts (Optional)</strong>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact 1 Name</label>
+          <input type="text" id="admin-contact-1-name" placeholder="Name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact 1 Phone</label>
+          <input type="text" id="admin-contact-1-phone" placeholder="Phone number">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact 2 Name</label>
+          <input type="text" id="admin-contact-2-name" placeholder="Name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact 2 Phone</label>
+          <input type="text" id="admin-contact-2-phone" placeholder="Phone number">
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="saveContacts()" style="margin-top:16px">💾 Save Contacts</button>
+    </div>
+
+    <!-- INFO SETTINGS -->
+    <div id="tab-info" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Additional Information</label>
+        <textarea id="admin-info" placeholder="Write useful information...&#10;Line breaks work fine!"></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="saveInfo()">💾 Save Information</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== CONFIG =====
+const STORAGE_KEY = 'equip_center_guest_page_data';
+
+// ===== DEFAULT DATA =====
+const defaultData = {
+  wifi: { ssid: 'EquipCenter_WiFi', password: 'welcome123' },
+  rules: [
+    '🤫 Keep quiet between 22:00 and 08:00',
+    '👟 Remove shoes at the entrance',
+    '🧹 Keep your space clean',
+    '🔑 Check out by 11:00 AM'
+  ],
+  whatsapp: '972501234567',
+  contacts: [
+    { name: 'Maintenance', phone: '+972-50-123-4567' },
+    { name: 'Reception', phone: '+972-50-765-4321' }
+  ],
+  info: 'Breakfast: 7:00 AM - 10:00 AM\nLaundry Room: Floor 1\nKitchen: Open 24 hours'
+};
+
+// ===== UTILS =====
+function getData() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  return stored ? JSON.parse(stored) : defaultData;
+}
+function setData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+function copyToClipboard(el) {
+  const value = el.querySelector('.wifi-value').textContent;
+  if (value === '—') return;
+  navigator.clipboard.writeText(value).then(() => {
+    el.querySelector('.copied-msg').style.display = 'block';
+    setTimeout(() => el.querySelector('.copied-msg').style.display = 'none', 2000);
+  });
+}
+
+function normalizePhone(phone) {
+  if (!phone) return '';
+  let cleaned = phone.replace(/\D/g, '');
+  if (cleaned.startsWith('0')) cleaned = '972' + cleaned.substring(1);
+  if (!cleaned.startsWith('972')) cleaned = '972' + cleaned;
+  return cleaned;
+}
+
+// ===== RENDER =====
+function renderPage() {
+  const data = getData();
+  
+  // WiFi
+  if (data.wifi.ssid) {
+    document.getElementById('wifi-block').style.display = 'block';
+    document.getElementById('wifi-ssid').textContent = data.wifi.ssid;
+    document.getElementById('wifi-password').textContent = data.wifi.password || '—';
+  }
+  
+  // Rules
+  if (data.rules.length) {
+    document.getElementById('rules-block').style.display = 'block';
+    const rulesList = document.getElementById('rules-list');
+    rulesList.innerHTML = data.rules.map((r, i) => `
+      <li>
+        <div class="rule-num">${i + 1}</div>
+        <div class="rule-text">${r}</div>
+      </li>
+    `).join('');
+  }
+  
+  // Contacts
+  const contactsList = document.getElementById('contacts-list');
+  let contactsHTML = '';
+  
+  if (data.whatsapp) {
+    const waPhone = normalizePhone(data.whatsapp);
+    contactsHTML += `
+      <li class="contact-item" style="background:linear-gradient(135deg,#E7F5E1 0%,#F0F9ED 100%);border:1px solid #C0DD97">
+        <span class="contact-name" style="color:#27500A">💬 WhatsApp</span>
+        <a class="contact-phone" href="https://wa.me/${waPhone}" style="color:#27500A">
+          <span class="whatsapp-icon">💬</span>
+          Send Message
+        </a>
+      </li>
+    `;
+  }
+  
+  if (data.contacts && data.contacts.length) {
+    contactsHTML += data.contacts.map(c => {
+      const tel = `tel:${c.phone.replace(/\D/g, '')}`;
+      return `
+        <li class="contact-item">
+          <span class="contact-name">${c.name}</span>
+          <a class="contact-phone" href="${tel}">${c.phone}</a>
+        </li>
+      `;
+    }).join('');
+  }
+  
+  if (contactsHTML) {
+    document.getElementById('contacts-block').style.display = 'block';
+    contactsList.innerHTML = contactsHTML;
+  }
+  
+  // Info
+  if (data.info) {
+    document.getElementById('info-block').style.display = 'block';
+    document.getElementById('info-text').innerHTML = data.info.split('\n').map(line => line.trim()).filter(l => l).join('<br>');
+  }
+  
+  // Load weather
+  loadWeather();
+}
+
+// ===== WEATHER =====
+async function loadWeather() {
+  try {
+    const res = await fetch('https://wttr.in/Haifa?format=j1');
+    const data = await res.json();
+    const current = data.current_condition[0];
+    const day = data.weather[0];
+    
+    const temp = Math.round(current.temp_c);
+    const desc = current.weatherDesc[0].value;
+    const humidity = current.humidity;
+    const windSpeed = Math.round(current.windspeedKmph);
+    
+    const icons = {
+      'Clear': '☀️', 'Sunny': '☀️',
+      'Partly cloudy': '⛅', 'Cloudy': '☁️',
+      'Overcast': '☁️',
+      'Mist': '🌫️', 'Fog': '🌫️',
+      'Patchy rain': '🌧️', 'Light rain': '🌧️', 'Moderate rain': '🌧️',
+      'Heavy rain': '⛈️', 'Thundery': '⛈️'
+    };
+    let icon = '☀️';
+    for (const [key, val] of Object.entries(icons)) {
+      if (desc.includes(key)) { icon = val; break; }
+    }
+    
+    document.getElementById('weather-block').style.display = 'block';
+    document.querySelector('.weather-icon').textContent = icon;
+    document.getElementById('weather-temp').textContent = `${temp}°C`;
+    document.getElementById('weather-desc').textContent = desc;
+    document.getElementById('weather-detail').innerHTML = `
+      💧 Humidity: ${humidity}% | 💨 Wind: ${windSpeed} km/h
+    `;
+  } catch (e) {
+    console.error('Weather error:', e);
+  }
+}
+
+// ===== ADMIN PANEL =====
+function switchAdminTab(tab, btn) {
+  document.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
+  document.getElementById('tab-' + tab).style.display = 'block';
+  document.querySelectorAll('.modal-header ~ div button').forEach(b => {
+    b.style.borderBottom = 'none';
+    b.style.color = '';
+  });
+  btn.style.borderBottom = '2px solid var(--warm)';
+  btn.style.color = 'var(--warm)';
+}
+
+function loadAdminData() {
+  const data = getData();
+  
+  // WiFi
+  document.getElementById('admin-wifi-ssid').value = data.wifi.ssid || '';
+  document.getElementById('admin-wifi-password').value = data.wifi.password || '';
+  
+  // Rules
+  data.rules.forEach((r, i) => {
+    const el = document.getElementById('admin-rule-' + (i + 1));
+    if (el) el.value = r;
+  });
+  
+  // Contacts
+  document.getElementById('admin-contact-whatsapp').value = data.whatsapp || '';
+  
+  if (data.contacts) {
+    data.contacts.forEach((c, i) => {
+      const nameEl = document.getElementById('admin-contact-' + (i + 1) + '-name');
+      const phoneEl = document.getElementById('admin-contact-' + (i + 1) + '-phone');
+      if (nameEl) nameEl.value = c.name;
+      if (phoneEl) phoneEl.value = c.phone;
+    });
+  }
+  
+  // Info
+  document.getElementById('admin-info').value = data.info || '';
+}
+
+function saveWiFi() {
+  const data = getData();
+  data.wifi = {
+    ssid: document.getElementById('admin-wifi-ssid').value.trim(),
+    password: document.getElementById('admin-wifi-password').value.trim()
+  };
+  setData(data);
+  toast('WiFi saved successfully ✓');
+  renderPage();
+}
+
+function saveRules() {
+  const data = getData();
+  data.rules = [1, 2, 3, 4].map(i => document.getElementById('admin-rule-' + i).value.trim()).filter(r => r);
+  setData(data);
+  toast('Rules saved successfully ✓');
+  renderPage();
+}
+
+function saveContacts() {
+  const data = getData();
+  data.whatsapp = document.getElementById('admin-contact-whatsapp').value.trim();
+  data.contacts = [];
+  for (let i = 1; i <= 2; i++) {
+    const name = document.getElementById('admin-contact-' + i + '-name').value.trim();
+    const phone = document.getElementById('admin-contact-' + i + '-phone').value.trim();
+    if (name && phone) data.contacts.push({ name, phone });
+  }
+  setData(data);
+  toast('Contacts saved successfully ✓');
+  renderPage();
+}
+
+function saveInfo() {
+  const data = getData();
+  data.info = document.getElementById('admin-info').value.trim();
+  setData(data);
+  toast('Information saved successfully ✓');
+  renderPage();
+}
+
+document.getElementById('modal-admin').addEventListener('click', e => {
+  if (e.target.id === 'modal-admin') closeModal('modal-admin');
+});
+
+// Close modal when opening
+const modalAdmin = document.getElementById('modal-admin');
+const observer = new MutationObserver(() => {
+  if (modalAdmin.classList.contains('open')) {
+    loadAdminData();
+  }
+});
+observer.observe(modalAdmin, { attributes: true });
+
+// ===== INIT =====
+renderPage();
+</script>
+
+</body>
+</html>
