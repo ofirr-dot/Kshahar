@@ -107,9 +107,9 @@ textarea{min-height:70px;resize:vertical}
 <body>
 
 <div class="hero">
-  <span class="hero-icon">🏢</span>
-  <div class="hero-title">Equip Center</div>
-  <div class="hero-sub">Welcome to our facility!</div>
+  <span class="hero-icon" id="hero-icon">🏢</span>
+  <div class="hero-title" id="hero-title">Equip Center</div>
+  <div class="hero-sub" id="hero-sub">Welcome to our facility!</div>
   <button class="admin-btn" onclick="openModal('modal-admin')">⚙ Admin</button>
 </div>
 
@@ -192,10 +192,28 @@ textarea{min-height:70px;resize:vertical}
 
     <!-- TABS -->
     <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:12px;overflow-x:auto">
-      <button class="btn btn-sm" style="border-bottom:2px solid var(--warm);border-radius:0;background:transparent;color:var(--warm);font-weight:600;white-space:nowrap" onclick="switchAdminTab('wifi',this)">WiFi</button>
+      <button class="btn btn-sm" style="border-bottom:2px solid var(--warm);border-radius:0;background:transparent;color:var(--warm);font-weight:600;white-space:nowrap" onclick="switchAdminTab('general',this)">General</button>
+      <button class="btn btn-sm" style="border-radius:0;background:transparent;white-space:nowrap" onclick="switchAdminTab('wifi',this)">WiFi</button>
       <button class="btn btn-sm" style="border-radius:0;background:transparent;white-space:nowrap" onclick="switchAdminTab('rules',this)">Rules</button>
       <button class="btn btn-sm" style="border-radius:0;background:transparent;white-space:nowrap" onclick="switchAdminTab('contacts',this)">Contacts</button>
       <button class="btn btn-sm" style="border-radius:0;background:transparent;white-space:nowrap" onclick="switchAdminTab('info',this)">Info</button>
+    </div>
+
+    <!-- GENERAL SETTINGS -->
+    <div id="tab-general" style="display:block">
+      <div class="form-group">
+        <label class="form-label">Facility Name (Main Title)</label>
+        <input type="text" id="admin-title" placeholder="Equip Center">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Welcome Message (Subtitle)</label>
+        <input type="text" id="admin-subtitle" placeholder="Welcome to our facility!">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Icon (Emoji)</label>
+        <input type="text" id="admin-icon" placeholder="🏢" maxlength="2">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="saveGeneral()">💾 Save Settings</button>
     </div>
 
     <!-- WIFI SETTINGS -->
@@ -288,6 +306,9 @@ const STORAGE_KEY = 'equip_center_guest_page_data';
 
 // ===== DEFAULT DATA =====
 const defaultData = {
+  title: 'Equip Center',
+  subtitle: 'Welcome to our facility!',
+  icon: '🏢',
   wifi: { ssid: 'EquipCenter_WiFi', password: 'welcome123' },
   rules: [
     '🤫 Keep quiet between 22:00 and 08:00',
@@ -339,6 +360,11 @@ function normalizePhone(phone) {
 // ===== RENDER =====
 function renderPage() {
   const data = getData();
+  
+  // Update titles
+  document.getElementById('hero-icon').textContent = data.icon || '🏢';
+  document.getElementById('hero-title').textContent = data.title || 'Equip Center';
+  document.getElementById('hero-sub').textContent = data.subtitle || 'Welcome to our facility!';
   
   // WiFi
   if (data.wifi.ssid) {
@@ -456,6 +482,11 @@ function switchAdminTab(tab, btn) {
 function loadAdminData() {
   const data = getData();
   
+  // General
+  document.getElementById('admin-title').value = data.title || 'Equip Center';
+  document.getElementById('admin-subtitle').value = data.subtitle || 'Welcome to our facility!';
+  document.getElementById('admin-icon').value = data.icon || '🏢';
+  
   // WiFi
   document.getElementById('admin-wifi-ssid').value = data.wifi.ssid || '';
   document.getElementById('admin-wifi-password').value = data.wifi.password || '';
@@ -480,6 +511,16 @@ function loadAdminData() {
   
   // Info
   document.getElementById('admin-info').value = data.info || '';
+}
+
+function saveGeneral() {
+  const data = getData();
+  data.title = document.getElementById('admin-title').value.trim() || 'Equip Center';
+  data.subtitle = document.getElementById('admin-subtitle').value.trim() || 'Welcome to our facility!';
+  data.icon = document.getElementById('admin-icon').value.trim() || '🏢';
+  setData(data);
+  toast('Settings saved successfully ✓');
+  renderPage();
 }
 
 function saveWiFi() {
